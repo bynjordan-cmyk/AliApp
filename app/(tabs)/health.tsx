@@ -15,6 +15,7 @@ import {
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
 import { BabySelector } from '@/features/baby/BabySelector';
 import { useSymptoms } from '@/features/symptoms/useSymptoms';
+import { symptomTypeKey } from '@/features/timeline/timeline-labels';
 import { formatDate, formatTime } from '@/lib/dates';
 import { useI18n } from '@/lib/i18n';
 
@@ -33,6 +34,12 @@ export default function HealthScreen() {
   const [tab, setTab] = useState<HealthTab>('symptoms');
 
   const symptoms = useSymptoms(baby?.id ?? null);
+
+  // La base guarda una clave estable; el texto visible se resuelve aquí (§20).
+  const translateSymptom = (value: string) => {
+    const key = symptomTypeKey(value);
+    return key ? t(key) : value;
+  };
 
   if (!baby) {
     return (
@@ -81,7 +88,7 @@ export default function HealthScreen() {
           {(symptoms.data ?? []).map((symptom) => (
             <ListItem
               key={symptom.id}
-              title={symptom.symptom_type}
+              title={translateSymptom(symptom.symptom_type)}
               subtitle={
                 symptom.severity
                   ? t(`health.severity${symptom.severity}` as 'health.severity1')

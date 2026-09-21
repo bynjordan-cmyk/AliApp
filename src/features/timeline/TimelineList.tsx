@@ -1,9 +1,12 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Divider, EmptyState, ListItem, Text, colors, eventColors, spacing } from '@/design-system';
+import { useFoodNames } from '@/features/food/useFoodNames';
 import { formatDayHeading, formatTime } from '@/lib/dates';
 import { useI18n } from '@/lib/i18n';
 import type { TimelineDay, TimelineItemType } from '@/types/timeline';
+
+import { timelineSubtitle } from './timeline-labels';
 
 /**
  * Línea de tiempo unificada, agrupada por día y ordenada por `occurred_at`.
@@ -21,6 +24,7 @@ const TINT_BY_TYPE: Record<TimelineItemType, string> = {
 
 export function TimelineList({ days }: { days: TimelineDay[] }) {
   const { locale, t } = useI18n();
+  const { nameForKey } = useFoodNames();
 
   if (days.length === 0) {
     return <EmptyState title={t('common.empty')} description={t('timeline.emptyDay')} />;
@@ -38,7 +42,7 @@ export function TimelineList({ days }: { days: TimelineDay[] }) {
             <ListItem
               key={`${item.type}-${item.id}`}
               title={t(item.title)}
-              subtitle={item.subtitle ?? undefined}
+              subtitle={timelineSubtitle(item, t, nameForKey) ?? undefined}
               meta={formatTime(item.occurredAt, locale)}
               tint={TINT_BY_TYPE[item.type]}
             />

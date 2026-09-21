@@ -16,6 +16,7 @@ import {
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
 import { BabySelector } from '@/features/baby/BabySelector';
 import { useAllergenBoard } from '@/features/food/useFoods';
+import { useFoodNames } from '@/features/food/useFoodNames';
 import { useBreastfeeds, useFoodEntries } from '@/features/feeding/useFeeding';
 import { formatDate, formatTime } from '@/lib/dates';
 import { useI18n } from '@/lib/i18n';
@@ -32,6 +33,7 @@ export default function FoodScreen() {
   const foodEntries = useFoodEntries(baby?.id ?? null);
   const breastfeeds = useBreastfeeds(baby?.id ?? null);
   const board = useAllergenBoard(baby?.id ?? null);
+  const foodNames = useFoodNames();
 
   if (!baby) {
     return (
@@ -117,7 +119,12 @@ export default function FoodScreen() {
                 {group.items.map((item) => (
                   <ListItem
                     key={`${group.status}-${item.food_id}`}
-                    title={item.canonical_name ?? item.canonical_key ?? ''}
+                    title={
+                      foodNames.byId.get(item.food_id ?? '') ??
+                      item.canonical_name ??
+                      item.canonical_key ??
+                      ''
+                    }
                     subtitle={`${t('foodStatus.exposures')}: ${item.exposure_count ?? 0}`}
                     meta={
                       item.last_exposure_at

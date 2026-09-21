@@ -1,16 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
-import { colors, spacing, touchTarget } from '@/design-system';
+import { SIDEBAR_WIDTH, colors, spacing, touchTarget, useLayout } from '@/design-system';
 import { useT } from '@/lib/i18n';
 
 /**
  * Arquitectura de información (§14): Hoy · Alimentación · Salud · Procesos ·
- * Perfil. Cada pestaña lleva icono Y texto: el estado nunca depende solo del
- * color (§21).
+ * Perfil.
+ *
+ * En móvil la navegación va abajo, al alcance del pulgar. En escritorio pasa a
+ * una columna lateral: una barra inferior de 1900 px de ancho no es una web,
+ * es una app estirada.
+ *
+ * Cada pestaña lleva icono Y texto: el estado nunca depende solo del color (§21).
  */
 export default function TabsLayout() {
   const t = useT();
+  const { isDesktop } = useLayout();
 
   return (
     <Tabs
@@ -18,13 +24,29 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: touchTarget.comfortable + spacing.xl,
-          paddingTop: spacing.xs,
-        },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        tabBarPosition: isDesktop ? 'left' : 'bottom',
+        tabBarVariant: isDesktop ? 'material' : 'uikit',
+        tabBarLabelPosition: isDesktop ? 'beside-icon' : 'below-icon',
+        tabBarStyle: isDesktop
+          ? {
+              width: SIDEBAR_WIDTH,
+              backgroundColor: colors.surface,
+              borderRightColor: colors.border,
+              borderRightWidth: 1,
+              paddingTop: spacing.xl,
+              paddingHorizontal: spacing.sm,
+            }
+          : {
+              backgroundColor: colors.surface,
+              borderTopColor: colors.border,
+              height: touchTarget.comfortable + spacing.xl,
+              paddingTop: spacing.xs,
+            },
+        tabBarItemStyle: isDesktop
+          ? { borderRadius: 12, marginBottom: spacing.xxs, justifyContent: 'flex-start' }
+          : undefined,
+        tabBarLabelStyle: { fontSize: isDesktop ? 14 : 12, fontWeight: '600' },
+        sceneStyle: { backgroundColor: colors.screen },
       }}
     >
       <Tabs.Screen

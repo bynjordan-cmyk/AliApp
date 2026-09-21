@@ -99,6 +99,15 @@ export const es = {
   'health.episodeResolved': 'Resuelto',
   'health.addToEpisode': 'Agrupar en un episodio',
 
+  'symptom.skin_rash': 'Erupción en la piel',
+  'symptom.vomiting': 'Vómitos',
+  'symptom.diarrhea': 'Diarrea',
+  'symptom.irritability': 'Irritabilidad',
+  'symptom.cough': 'Tos',
+  'symptom.congestion': 'Congestión',
+  'symptom.swelling': 'Hinchazón',
+  'symptom.other': 'Otro',
+
   'diaper.type': 'Tipo',
   'diaper.urine': 'Pipí',
   'diaper.stool': 'Caca',
