@@ -17,7 +17,7 @@ Identidad aprobada: blanco, coral #FF6B6B, navy #0F2D5B, aqua #22D3EE, sunshine 
 - Jest: 8 suites de dominio, 55 pruebas correctas; 3 suites de integración/RLS, 22 pruebas correctas (77 en total).
 - expo export --platform ios --platform android --output-dir dist/native --max-workers 2: correcto para ambas plataformas. Esto verifica bundles JS/Hermes; no es una compilación firmada ni ejecución nativa.
 - Navegador integrado: revisión a 390×844 y 360×800. Acceso, validación, cinco pestañas, panel de alimentos, registro rápido, selección, Guardar habilitado/deshabilitado, regreso a Hoy y desplazamiento hasta el final. Datos ficticios de servidor local fuera del repositorio, sin credenciales reales.
-- Capturas y galería: ../outputs/aliapp-review/revision-visual.html desde el directorio padre del repo.
+- Capturas de la revisión: `docs/branding/`, incluidas en el repositorio.
 
 ## Pendientes y límites
 
@@ -25,7 +25,18 @@ Identidad aprobada: blanco, coral #FF6B6B, navy #0F2D5B, aqua #22D3EE, sunshine 
 - Postgres 16.15 portable ejecutado sin instalación de sistema ni permisos de administrador, limitado a 127.0.0.1:55432. Se aplicaron las 14 migraciones, seed y shim de Supabase del repositorio. Pasaron las 22 pruebas existentes, incluido el corte vertical. El shim no incluye Storage: la migración 0012 omite sus buckets/políticas; esto no verifica Supabase Auth/Storage reales.
 - Las capturas web no certifican equivalencia visual en los dos sistemas móviles.
 - Falta probar guardado y sesión contra el backend real. Los fixtures solo permiten revisar UI; no validan persistencia ni autorización.
-- Integrado sobre df8fbf6, conservando navegación lateral, distribución adaptable y etiquetas traducidas del cambio previo. Propuesta en rama codex/aliapp-branding; no fusionada.
+- Integrado sobre df8fbf6, conservando navegación lateral, distribución adaptable y etiquetas traducidas del cambio previo.
+
+## Revisión posterior
+
+Revisado sobre la rama: typecheck, lint, 55 pruebas de dominio y 22 contra Postgres real, todo correcto. Se aplicaron cuatro ajustes antes de fusionar:
+
+1. `background` vuelve al valor aprobado (#F7FAFF): ese cambio era cosmético y no afectaba al contraste. Los otros dos cambios de token (`muted` y el nuevo `error`) se conservan por accesibilidad y quedan documentados como desviación en `docs/architecture.md`.
+2. Las etiquetas de navegación vuelven a 12px: 10px se queda corto fuera de iOS.
+3. La lista de lactancia en Alimentación mostraba `left` / `right` en crudo pese a existir ya las claves `breastfeed.*`; ahora se traducen.
+4. Aseo: referencia a la galería corregida a una ruta del repositorio y comentarios de código devueltos al español, que es el idioma de documentación de este repositorio.
+
+Los contrastes medidos sobre blanco confirman la mejora: botón primario 2.78:1 → 4.89:1, texto secundario 4.31:1 → 5.75:1, mensajes de error 2.78:1 → 6.76:1.
 
 ## Capturas de la versión integrada
 

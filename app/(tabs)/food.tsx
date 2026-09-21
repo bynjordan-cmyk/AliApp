@@ -113,7 +113,7 @@ export default function FoodScreen() {
               <ListItem
                 key={row.id}
                 title={t('timeline.breastfeed')}
-                subtitle={row.side ?? undefined}
+                subtitle={row.side ? t(`breastfeed.${row.side}`) : undefined}
                 meta={formatTime(row.started_at, locale)}
                 tint={eventColors.breastfeed}
               />

@@ -6,7 +6,10 @@ import { Button } from './Button';
 import { EmptyState } from './EmptyState';
 import { LoadingState } from './LoadingState';
 
-/** Presentation only: preserve query ownership and retry behavior in the caller. */
+/**
+ * Solo presentación: los estados de carga, error y reintento se pintan aquí,
+ * pero la consulta y el reintento siguen siendo de quien llama.
+ */
 export function QueryState({
   loading,
   error,

@@ -14,7 +14,13 @@ export type ScreenProps = {
   bottomSpace?: number;
 };
 
-/** Shared native safe areas and keyboard behavior, with a centered wide-screen column. */
+/**
+ * Contenedor de página: áreas seguras, comportamiento del teclado y, en
+ * pantallas anchas, una columna centrada en lugar de contenido estirado.
+ *
+ * `bottomSpace` reserva sitio al final para que el botón flotante no tape la
+ * última tarjeta.
+ */
 export function Screen({
   children,
   scroll = true,

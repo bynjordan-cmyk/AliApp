@@ -16,8 +16,11 @@ export const palette = {
   white: '#FFFFFF',
 
   // Supporting
-  background: '#F8F9FC',
+  background: '#F7FAFF',
   ink: '#18314E',
+  // Desviación documentada: el valor aprobado (#6B7B91) se queda en 4.31:1
+  // sobre blanco y no alcanza el mínimo AA de 4.5:1 para texto pequeño.
+  // Este tono conserva el mismo carácter y sube a 5.75:1 (ver docs/architecture.md).
   muted: '#58677D',
   line: '#DDE7F0',
   softCoral: '#FFF0F0',
@@ -40,6 +43,8 @@ export const colors = {
   textSecondary: palette.muted,
   textOnAccent: palette.white,
   textOnCoral: palette.navy,
+  // Color añadido fuera de la paleta aprobada: el coral de marca sobre blanco
+  // da 2.78:1 y un mensaje de error no puede ser ilegible. Este rojo da 6.76:1.
   error: '#A62F42',
   transparent: 'transparent',
   border: palette.line,
@@ -98,7 +103,9 @@ export const touchTarget = {
 } as const;
 
 export const typography = {
-  navigation: { fontSize: 10, lineHeight: 16, fontWeight: '600' },
+  // 12px es el mínimo cómodo en Android y web; iOS usa 10, pero aquí manda
+  // la pantalla más exigente (§21).
+  navigation: { fontSize: 12, lineHeight: 16, fontWeight: '600' },
   display: { fontSize: 32, lineHeight: 40, fontWeight: '700' },
   title: { fontSize: 24, lineHeight: 32, fontWeight: '700' },
   subtitle: { fontSize: 17, lineHeight: 24, fontWeight: '600' },
