@@ -3,12 +3,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
 import { z } from 'zod';
 
 import { Input, PageHeader, Button, Card, Screen, Text, colors, spacing } from '@/design-system';
 import { useSession } from '@/features/auth/SessionProvider';
-import { createBaby, createHousehold } from '@/features/baby/baby.service';
+import { createBaby, createHousehold, updateBaby } from '@/features/baby/baby.service';
+import { suggestStageFromAge } from '@/features/baby/feeding-stage';
 import { useT } from '@/lib/i18n';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -31,6 +32,9 @@ export default function OnboardingScreen() {
   const queryClient = useQueryClient();
   const { profile, refreshProfile } = useSession();
   const [error, setError] = useState<string | null>(null);
+  // Pregunta explícita: manda sobre cualquier estimación por edad.
+  const [solidsStarted, setSolidsStarted] = useState(false);
+  const [breastfeeding, setBreastfeeding] = useState(true);
 
   const { control, handleSubmit, formState } = useForm<OnboardingValues>({
     resolver: zodResolver(onboardingSchema),
@@ -49,7 +53,7 @@ export default function OnboardingScreen() {
 
       const household = await createHousehold({ name: values.householdName, locale: 'es' });
 
-      await createBaby(
+      const bebe = await createBaby(
         {
           householdId: household.id,
           name: values.babyName,
@@ -58,6 +62,16 @@ export default function OnboardingScreen() {
         },
         profileId,
       );
+
+      await updateBaby(bebe.id, {
+        solidsStarted,
+        breastfeeding,
+        // La etapa se propone desde la edad y la respuesta sobre sólidos; la
+        // familia puede cambiarla luego en Perfil.
+        feedingStage: solidsStarted
+          ? 'complementary_feeding'
+          : (suggestStageFromAge(values.birthDate || null) ?? 'milk_only'),
+      });
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.households });
       router.replace('/(tabs)');
@@ -120,6 +134,31 @@ export default function OnboardingScreen() {
           )}
         />
 
+        <View style={styles.pregunta}>
+          <View style={{ flex: 1 }}>
+            <Text>{t('profile.solidsStarted')}</Text>
+            <Text variant="caption" color={colors.textSecondary}>
+              {t('profile.solidsHint')}
+            </Text>
+          </View>
+          <Switch
+            value={solidsStarted}
+            accessibilityLabel={t('profile.solidsStarted')}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            onValueChange={setSolidsStarted}
+          />
+        </View>
+
+        <View style={styles.pregunta}>
+          <Text style={{ flex: 1 }}>{t('quickLog.breastfeed')}</Text>
+          <Switch
+            value={breastfeeding}
+            accessibilityLabel={t('quickLog.breastfeed')}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            onValueChange={setBreastfeeding}
+          />
+        </View>
+
         {error ? (
           <Text variant="caption" color={colors.error} accessibilityRole="alert">
             {error}
@@ -138,4 +177,11 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   header: { gap: spacing.sm, marginTop: spacing.xl },
+  pregunta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    minHeight: 44,
+  },
 });

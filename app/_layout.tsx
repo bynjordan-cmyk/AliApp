@@ -36,6 +36,10 @@ export default function RootLayout() {
                   options={{ presentation: 'modal', headerShown: false }}
                 />
                 <Stack.Screen
+                  name="calendar"
+                  options={{ presentation: 'modal', headerShown: false }}
+                />
+                <Stack.Screen
                   name="reaction-builder"
                   options={{ presentation: 'modal', headerShown: false }}
                 />

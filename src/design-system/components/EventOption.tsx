@@ -3,8 +3,17 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { colors, radius, spacing, touchTarget } from '../tokens';
 import { Text } from './Text';
 
+/**
+ * Presentación de cada acción del registro rápido.
+ *
+ * Las tres vías de leche se distinguen por icono además de por nombre: para
+ * una familia que combina pecho, fórmula y leche extraída, esa diferencia es
+ * parte del registro, no un detalle estético.
+ */
 export const eventPresentation = {
   breastfeed: { icon: 'water-outline', background: colors.calmSoft },
+  formula: { icon: 'flask-outline', background: colors.calmSoft },
+  pumped_milk: { icon: 'cube-outline', background: colors.calmSoft },
   food: { icon: 'restaurant-outline', background: colors.accentSoft },
   diaper: { icon: 'happy-outline', background: colors.infoSoft },
   symptom: { icon: 'eye-outline', background: colors.highlightSoft },

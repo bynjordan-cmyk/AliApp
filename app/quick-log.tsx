@@ -23,10 +23,11 @@ import { MediaStrip } from '@/features/media/MediaStrip';
 import { useCreateSymptom } from '@/features/symptoms/useSymptoms';
 import { createDiaperEvent } from '@/features/diapers/diaper.service';
 import { createMedicationEvent } from '@/features/medication/medication.service';
+import { quickLogActions } from '@/features/baby/feeding-stage';
 import { useT } from '@/lib/i18n';
 import type { BreastSide, DiaperType, SymptomSeverity } from '@/types/domain';
 
-type QuickLogKind = 'breastfeed' | 'food' | 'diaper' | 'symptom' | 'medication';
+type QuickLogKind = 'breastfeed' | 'formula' | 'pumped_milk' | 'food' | 'diaper' | 'symptom' | 'medication';
 
 /**
  * Hoja de registro rápido (§15).
@@ -46,6 +47,12 @@ export default function QuickLogScreen() {
   const { profile } = useSession();
   const [kind, setKind] = useState<QuickLogKind | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [mostrarTodas, setMostrarTodas] = useState(false);
+
+  // El orden depende de la etapa del bebé: quien aún toma solo leche no
+  // debería tropezar con "Comida" en cada registro. Nada queda oculto: lo que
+  // no sale de primeras está en "Más".
+  const acciones = quickLogActions(baby);
 
   const context = {
     householdId: household?.id ?? '',
@@ -78,14 +85,9 @@ export default function QuickLogScreen() {
       <PageHeader title={t('quickLog.title')} icon="add-outline" />
 
       <View style={styles.kinds}>
-        {(
-          [
-            ['breastfeed', t('quickLog.breastfeed')],
-            ['food', t('quickLog.food')],
-            ['diaper', t('quickLog.diaper')],
-            ['symptom', t('quickLog.symptom')],
-            ['medication', t('quickLog.medication')],
-          ] as const
+        {(mostrarTodas ? [...acciones.primary, ...acciones.more] : acciones.primary).map(
+          (value) =>
+            [value, t(`quickLog.${value}` as 'quickLog.food')] as const,
         ).map(([value, label]) =>
           kind ? (
             <Chip
@@ -112,13 +114,21 @@ export default function QuickLogScreen() {
         )}
       </View>
 
+      {!kind && acciones.more.length > 0 ? (
+        <Button
+          variant="ghost"
+          label={mostrarTodas ? t('quickLog.showLess') : t('quickLog.showMore')}
+          onPress={() => setMostrarTodas((v) => !v)}
+        />
+      ) : null}
+
       {error ? (
         <Text variant="caption" color={colors.error} accessibilityRole="alert">
           {error}
         </Text>
       ) : null}
 
-      {kind === 'breastfeed' ? (
+      {kind === 'breastfeed' || kind === 'formula' || kind === 'pumped_milk' ? (
         <BreastfeedForm
           babyId={baby.id}
           context={context}

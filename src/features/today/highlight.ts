@@ -1,5 +1,5 @@
 import type { TranslationKey } from '@/lib/i18n';
-import type { Journey } from '@/types/domain';
+import type { Journey, Reminder } from '@/types/domain';
 import type { TimelineItem } from '@/types/timeline';
 
 /**
@@ -21,19 +21,31 @@ export type Highlight = {
   /** Valores para interpolar en el cuerpo. */
   params?: Record<string, string | number>;
   tone: 'journey' | 'symptom' | 'episode' | 'neutral';
-  icon: 'map-outline' | 'calendar-outline' | 'eye-outline' | 'alert-circle-outline' | 'sparkles-outline';
+  icon:
+    | 'map-outline'
+    | 'calendar-outline'
+    | 'eye-outline'
+    | 'alert-circle-outline'
+    | 'sparkles-outline'
+    | 'alarm-outline';
 };
 
 export type HighlightInput = {
   items: TimelineItem[];
   journeys: Journey[];
-  /** Días que faltan para la revisión más próxima, si hay alguna. */
+  /** Recordatorios de la persona, para poder avisar del más inminente. */
+  reminders?: Reminder[];
   today?: Date;
 };
 
 const DIAS_PARA_AVISAR_REVISION = 7;
 
-export function buildHighlight({ items, journeys, today = new Date() }: HighlightInput): Highlight {
+export function buildHighlight({
+  items,
+  journeys,
+  reminders = [],
+  today = new Date(),
+}: HighlightInput): Highlight {
   // 1. Un episodio abierto es lo más relevante que puede haber en curso.
   const episodioAbierto = items.find(
     (item) => item.type === 'reaction_episode' && item.metadata.status === 'open',
@@ -47,7 +59,30 @@ export function buildHighlight({ items, journeys, today = new Date() }: Highligh
     };
   }
 
-  // 2. Una revisión de proceso que se acerca: es una fecha que puso una
+  // 2. Un recordatorio que la persona pidió y está a punto de sonar. Va antes
+  //    que el resto porque es lo único que ella misma marcó como importante.
+  const inminente = reminders
+    .filter((reminder) => reminder.status === 'scheduled')
+    .map((reminder) => ({
+      reminder,
+      minutos: Math.round(
+        (new Date(reminder.scheduled_for).getTime() - today.getTime()) / 60000,
+      ),
+    }))
+    .filter((entrada) => entrada.minutos >= 0 && entrada.minutos <= 120)
+    .sort((a, b) => a.minutos - b.minutos)[0];
+
+  if (inminente) {
+    return {
+      titleKey: 'today.highlight.reminderTitle',
+      bodyKey: 'today.highlight.reminderBody',
+      params: { minutes: inminente.minutos, title: inminente.reminder.title },
+      tone: 'neutral',
+      icon: 'alarm-outline',
+    };
+  }
+
+  // 3. Una revisión de proceso que se acerca: es una fecha que puso una
   //    persona, no un plazo que calcule AliApp.
   const revisiones = journeys
     .filter((journey) => journey.status === 'active' && journey.review_on)
@@ -72,7 +107,7 @@ export function buildHighlight({ items, journeys, today = new Date() }: Highligh
     };
   }
 
-  // 3. Síntomas registrados hoy: se cuentan, no se valoran.
+  // 4. Síntomas registrados hoy: se cuentan, no se valoran.
   const sintomasHoy = items.filter((item) => item.type === 'symptom').length;
   if (sintomasHoy > 0) {
     return {
@@ -84,7 +119,7 @@ export function buildHighlight({ items, journeys, today = new Date() }: Highligh
     };
   }
 
-  // 4. Un proceso activo sin revisión próxima.
+  // 5. Un proceso activo sin revisión próxima.
   const activo = journeys.find((journey) => journey.status === 'active');
   if (activo) {
     return {
@@ -95,7 +130,7 @@ export function buildHighlight({ items, journeys, today = new Date() }: Highligh
     };
   }
 
-  // 5. Día tranquilo. Se dice sin sugerir que eso signifique algo.
+  // 6. Día tranquilo. Se dice sin sugerir que eso signifique algo.
   return {
     titleKey: 'today.highlight.calmTitle',
     bodyKey: items.length > 0 ? 'today.highlight.calmBody' : 'today.highlight.noRecordsBody',

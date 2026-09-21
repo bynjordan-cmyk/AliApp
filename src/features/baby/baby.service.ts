@@ -98,6 +98,45 @@ export async function createBaby(
   return baby;
 }
 
+export type UpdateBabyInput = {
+  birthDate?: string | null;
+  feedingStage?: string | null;
+  solidsStarted?: boolean;
+  breastfeeding?: boolean;
+  formula?: boolean;
+  pumpedMilk?: boolean;
+  name?: string;
+};
+
+/**
+ * Actualiza el perfil del bebé.
+ *
+ * La edad no está entre los campos a propósito: se deriva de `birth_date` y se
+ * recalcula sola. Guardar "8 meses" sería un dato que envejece mal.
+ */
+export async function updateBaby(
+  babyId: string,
+  patch: UpdateBabyInput,
+  client: AliappClient = getSupabaseClient(),
+): Promise<void> {
+  const { error } = await client
+    .from('babies')
+    .update({
+      ...(patch.name === undefined ? {} : { name: patch.name }),
+      ...(patch.birthDate === undefined ? {} : { birth_date: patch.birthDate }),
+      ...(patch.feedingStage === undefined
+        ? {}
+        : { feeding_stage: patch.feedingStage as never }),
+      ...(patch.solidsStarted === undefined ? {} : { solids_started: patch.solidsStarted }),
+      ...(patch.breastfeeding === undefined ? {} : { breastfeeding: patch.breastfeeding }),
+      ...(patch.formula === undefined ? {} : { formula: patch.formula }),
+      ...(patch.pumpedMilk === undefined ? {} : { pumped_milk: patch.pumpedMilk }),
+    })
+    .eq('id', babyId);
+
+  if (error) throw new Error(`[AliApp] updateBaby: ${error.message}`);
+}
+
 /** Borrado lógico. El historial clínico nunca se borra físicamente. */
 export async function softDeleteBaby(
   babyId: string,

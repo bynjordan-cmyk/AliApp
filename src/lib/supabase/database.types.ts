@@ -21,6 +21,11 @@ export type Database = {
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
+          feeding_stage: Database['public']['Enums']['feeding_stage'] | null;
+          solids_started: boolean;
+          breastfeeding: boolean;
+          formula: boolean;
+          pumped_milk: boolean;
         };
         Insert: {
           id?: string;
@@ -32,6 +37,11 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          feeding_stage?: Database['public']['Enums']['feeding_stage'] | null;
+          solids_started?: boolean;
+          breastfeeding?: boolean;
+          formula?: boolean;
+          pumped_milk?: boolean;
         };
         Update: {
           id?: string;
@@ -43,6 +53,11 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          feeding_stage?: Database['public']['Enums']['feeding_stage'] | null;
+          solids_started?: boolean;
+          breastfeeding?: boolean;
+          formula?: boolean;
+          pumped_milk?: boolean;
         };
         Relationships: [];
       };
@@ -919,6 +934,7 @@ export type Database = {
       episode_status: 'open' | 'resolved';
       exposure_confidence_label: 'insufficient_data' | 'under_observation' | 'temporally_consistent' | 'inconsistent';
       exposure_source_type: 'baby_food' | 'maternal_food' | 'breastfeed' | 'pumped_milk' | 'unknown';
+      feeding_stage: 'milk_only' | 'milk_and_early_solids' | 'complementary_feeding' | 'family_food' | 'custom';
       food_status: 'unknown' | 'introducing' | 'observing' | 'tolerated' | 'avoid' | 'professional_supervision';
       food_status_source: 'family' | 'professional_plan' | 'system_summary';
       food_subject_type: 'baby' | 'caregiver';

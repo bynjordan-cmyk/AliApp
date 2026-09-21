@@ -18,6 +18,8 @@ import {
 } from '@/design-system';
 import { useSession } from '@/features/auth/SessionProvider';
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
+import { BabyEditor } from '@/features/baby/BabyEditor';
+import { resolveStage } from '@/features/baby/feeding-stage';
 import { useActiveJourneys } from '@/features/journeys/useJourneys';
 import {
   useNotificationSettings,
@@ -86,13 +88,18 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {baby.feeding_mode.length > 0 ? (
-              <View style={styles.chips}>
-                {baby.feeding_mode.map((modo) => (
-                  <Chip key={modo} label={modo} />
-                ))}
-              </View>
-            ) : null}
+            <View style={styles.chips}>
+              {resolveStage(baby) ? (
+                <Chip
+                  label={t(`feedingStage.${resolveStage(baby)}` as 'feedingStage.milk_only')}
+                  selected
+                />
+              ) : null}
+              {baby.breastfeeding ? <Chip label={t('quickLog.breastfeed')} /> : null}
+              {baby.formula ? <Chip label={t('quickLog.formula')} /> : null}
+              {baby.pumped_milk ? <Chip label={t('quickLog.pumped_milk')} /> : null}
+              {baby.solids_started ? <Chip label={t('food.title')} /> : null}
+            </View>
 
             {(journeys.data ?? []).length > 0 ? (
               <Text variant="caption" color={colors.textSecondary}>
@@ -107,6 +114,8 @@ export default function ProfileScreen() {
           <EmptyState title={t('today.noBaby')} description={t('today.noBabyHint')} />
         )}
       </Card>
+
+      {baby ? <BabyEditor baby={baby} /> : null}
 
       {/* Familia y cuidadores */}
       <Card>

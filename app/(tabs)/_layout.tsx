@@ -68,9 +68,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t('tabs.today'),
+          title: t('tabs.home'),
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="sunny-outline" color={color} focused={focused} />
+            <TabIcon name="home-outline" color={color} focused={focused} />
           ),
         }}
       />

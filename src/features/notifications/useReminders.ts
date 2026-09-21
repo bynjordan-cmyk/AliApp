@@ -12,7 +12,10 @@ import {
   setPreference,
   saveSettings,
   cancelReminder,
+  completeReminder,
+  snoozeReminder,
 } from './reminder.service';
+import { snoozeTo } from './quiet-hours';
 import { scheduleReminder } from './scheduler';
 
 const CLAVE = 'reminders';
@@ -134,6 +137,42 @@ export function useCancelReminder() {
 
   return useMutation({
     mutationFn: (reminderId: string) => cancelReminder(reminderId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [CLAVE, household?.id] });
+    },
+  });
+}
+
+/** Marca un recordatorio como hecho. No lo borra: queda su rastro. */
+export function useCompleteReminder() {
+  const queryClient = useQueryClient();
+  const { household } = useActiveBaby();
+
+  return useMutation({
+    mutationFn: (reminderId: string) => completeReminder(reminderId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [CLAVE, household?.id] });
+    },
+  });
+}
+
+/**
+ * Pospone un recordatorio. Si la nueva hora cae en horas de silencio, se
+ * desplaza hasta que terminan: un aviso pospuesto no debería sonar de noche.
+ */
+export function useSnoozeReminder() {
+  const queryClient = useQueryClient();
+  const { household } = useActiveBaby();
+  const { settings } = useNotificationSettings();
+
+  return useMutation({
+    mutationFn: ({ reminderId, minutes }: { reminderId: string; minutes: number }) => {
+      const siguiente = snoozeTo(new Date(), minutes, {
+        start: settings.data?.quiet_hours_start ?? null,
+        end: settings.data?.quiet_hours_end ?? null,
+      });
+      return snoozeReminder(reminderId, siguiente.toISOString());
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [CLAVE, household?.id] });
     },

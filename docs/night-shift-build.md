@@ -85,3 +85,56 @@ Este entorno no tiene simulador de iOS ni SDK de Android, así que:
    explícita— y con el lenguaje permitido del encargo.
 3. **Pantalla de creación de procesos**, que sigue siendo el único hueco real
    de la navegación.
+
+
+# Dashboard y experiencia por etapa
+
+## Inicio, no "Hoy"
+
+La primera pestaña es **Inicio** y "Hoy" pasa a ser una fecha dentro del
+dashboard: se puede mirar ayer o cualquier día de la semana visible.
+
+El orden de la pantalla es deliberado y responde a la prioridad del encargo:
+
+1. **qué necesita atención** → "Lo importante ahora"
+2. **cómo va el día** → resumen por bloques
+3. **qué está próximo** → recordatorios
+4. **qué ocurrió** → línea de tiempo, al final
+
+## Etapa alimentaria
+
+`0017_feeding_stage.sql` añade `feeding_stage`, `solids_started`,
+`breastfeeding`, `formula` y `pumped_milk`. `feeding_mode` se conserva y sus
+datos se trasladaron a las columnas nuevas: nada de lo registrado se pierde.
+
+**La regla que manda**: la respuesta explícita de la familia a "¿Ya comenzó
+alimentos sólidos?" prevalece sobre cualquier estimación por edad.
+`suggestStageFromAge` solo propone un valor en un formulario;
+`resolveStage` nunca lo usa para contradecir lo que la familia dijo. AliApp no
+decide cuándo un bebé empieza con sólidos.
+
+La edad **nunca se almacena**: se deriva de `birth_date` y cambia sola.
+
+## Registro rápido adaptado
+
+El orden depende de la etapa: con solo leche, primero pecho/fórmula/extraída;
+con sólidos iniciados, primero comida. Fórmula y leche extraída solo aparecen
+de primeras si la familia las usa.
+
+**Nada se esconde**: lo que no sale de primeras está en "Más opciones".
+
+## Resumen del día
+
+`buildDailySummary` devuelve un objeto estructurado —alimentación, salud,
+pañales, fotos, procesos activos y recordatorios próximos— que la interfaz
+consume y que podrá consumir Ali Insights. Es una función pura, sin React ni
+base de datos.
+
+Cuenta hechos y añade contexto (a qué hora fue lo último, cuántas primeras
+veces). No valora si el día fue bueno, no compara con ninguna norma y no
+infiere causas. Hay una prueba que comprueba exactamente eso.
+
+## Calendario global
+
+Accesible desde Inicio (`/calendar`), con las mismas capas filtrables. El
+calendario de Procesos sigue existiendo como vista del proceso.

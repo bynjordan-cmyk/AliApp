@@ -87,6 +87,19 @@ export async function cancelReminder(
   if (error) throw new Error(`[AliApp] cancelReminder: ${error.message}`);
 }
 
+/** Marca un recordatorio como hecho, conservando la fila. */
+export async function completeReminder(
+  reminderId: string,
+  client: AliappClient = getSupabaseClient(),
+): Promise<void> {
+  const { error } = await client
+    .from('reminders')
+    .update({ status: 'done' })
+    .eq('id', reminderId);
+
+  if (error) throw new Error(`[AliApp] completeReminder: ${error.message}`);
+}
+
 export async function snoozeReminder(
   reminderId: string,
   nextTime: string,

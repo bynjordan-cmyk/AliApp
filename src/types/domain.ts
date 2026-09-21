@@ -30,6 +30,12 @@ export const MANAGER_ROLES: readonly MemberRole[] = ['owner', 'parent'] as const
 // --- Bebé ------------------------------------------------------------------
 export type Baby = Tables<'babies'>;
 
+/**
+ * Etapa alimentaria. La elige la familia; la edad solo puede sugerirla.
+ * AliApp no decide cuándo un bebé empieza con sólidos.
+ */
+export type FeedingStage = Enums<'feeding_stage'>;
+
 // --- Catálogo de alimentos -------------------------------------------------
 export type Food = Tables<'foods'>;
 export type FoodTranslation = Tables<'food_translations'>;
