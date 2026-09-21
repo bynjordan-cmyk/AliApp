@@ -211,7 +211,7 @@ async function main() {
   pagina.on('pageerror', (error) => fallos.push(String(error)));
 
   try {
-    log('→ leyendo tres etiquetas en Chromium (la primera vez tarda)');
+    log('→ leyendo cuatro imágenes en Chromium (la primera vez tarda)');
     await pagina.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'domcontentloaded' });
     await pagina.waitForFunction(() => window.__RESULTADO__ !== undefined, null, {
       timeout: 240000,
@@ -254,6 +254,12 @@ async function main() {
       r.c.avoid.some((linea) => linea.endsWith('cow_milk')),
       'en C la leche sigue coincidiendo con un alimento marcado como Evitar',
     );
+    comprobar(
+      r.d.rechazada,
+      `una imagen sin texto se RECHAZA en lugar de enseñar sopa (${r.d.kind ?? r.d.rawText?.slice(0, 40)})`,
+    );
+    comprobar(r.d.kind === 'low_confidence', 'y se rechaza por confianza baja, con su motivo');
+
     comprobar(fallos.length === 0, `sin errores de página (${fallos.join(' | ')})`);
 
     log('\n✓ OCR real verificado en navegador');

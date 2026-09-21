@@ -8,6 +8,7 @@ module.exports = [
     ignores: [
       'node_modules/**',
       'dist/**',
+      'dist-native/**',
       '.expo/**',
       'coverage/**',
       'supabase/.tmp/**',

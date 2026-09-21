@@ -480,6 +480,8 @@ export const es = {
   'label.error.workerHint': 'Vuelve a tocar «Usar esta foto» con la misma imagen. Si se repite, prueba a repetir la foto.',
   'label.error.unreadable': 'No hemos podido leer texto en esta foto.',
   'label.error.unreadableHint': 'Repite la foto con más luz, más cerca y con la etiqueta lo más plana posible.',
+  'label.error.lowConfidence': 'La lectura ha salido demasiado confusa para enseñártela.',
+  'label.error.lowConfidenceHint': 'Suele pasar al fotografiar una pantalla, un envase entero o una tabla nutricional. Acerca la cámara a la lista de ingredientes, o elige una captura de pantalla desde el dispositivo.',
   'label.error.noText': 'La foto se ha leído, pero no ha salido texto aprovechable.',
   'label.error.noTextHint': 'Repite la foto enfocando solo la lista de ingredientes.',
   'label.openCamera': 'Abrir cámara',

@@ -14,9 +14,10 @@ import type { LabelOcrImage } from './ocr-types';
  *
  *   1. Cámara en vivo con `getUserMedia`, pidiendo la trasera (`environment`),
  *      que es la que enfoca un envase que tienes en la mano.
- *   2. Respaldo con `<input type="file" accept="image/*" capture>`. No es un
- *      premio de consolación: en bastantes navegadores móviles es lo que de
- *      verdad funciona, y en iOS abre directamente la cámara del sistema.
+ *   2. Respaldo con `<input type="file" accept="image/*">`, **sin `capture`**,
+ *      para elegir una foto o una captura de pantalla que ya existe. Con
+ *      `capture` puesto, Chrome en Android abre la cámara y nunca ofrece la
+ *      galería, que era exactamente lo contrario de lo que pide el texto.
  *
  * El respaldo se ofrece SIEMPRE, no solo cuando la cámara falla. Quien esté
  * en un ordenador con una foto ya hecha no tiene por qué pelearse con una
@@ -163,9 +164,11 @@ export function LabelCapture({ onCaptured, onFailure }: LabelCaptureProps) {
             <input
               type="file"
               accept="image/*"
-              // En móvil abre la cámara del sistema; en escritorio, el
-              // selector de archivos de siempre.
-              capture="environment"
+              // SIN `capture`. Con él, Chrome en Android abre la cámara del
+              // sistema y no llega a ofrecer la galería, así que el botón
+              // decía "elige una foto del dispositivo" y hacía justo lo que
+              // ya hace el botón de arriba. Para hacer una foto está la
+              // cámara en vivo; esto es para una foto que ya existe.
               onChange={desdeArchivo}
               style={{ marginTop: spacing.xs, width: '100%' }}
             />

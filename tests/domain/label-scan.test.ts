@@ -317,10 +317,18 @@ describe('qué se le cuenta a una persona cuando algo falla', () => {
     // Repetir la lectura de una foto ilegible da exactamente lo mismo.
     expect(isRetryable('unreadable_image')).toBe(false);
     expect(isRetryable('permission_denied')).toBe(false);
+    // Y volver a leer una foto confusa devuelve la misma confusión: lo que
+    // hay que cambiar es la foto, no el intento.
+    expect(isRetryable('low_confidence')).toBe(false);
   });
 
-  it('los seis fallos tienen texto en los dos idiomas', () => {
+  it('una lectura confusa se respeta como tal y no se confunde con un fallo del motor', () => {
+    expect(classifyOcrError(new LabelScanError('low_confidence'))).toBe('low_confidence');
+  });
+
+  it('los siete fallos tienen texto en los dos idiomas', () => {
     const fallos: LabelScanFailure[] = [
+      'low_confidence',
       'camera_unavailable',
       'permission_denied',
       'engine_load_failed',

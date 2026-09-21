@@ -466,6 +466,8 @@ export const en: Record<TranslationKey, string> = {
   'label.error.workerHint': 'Tap "Use this photo" again with the same image. If it keeps happening, try retaking it.',
   'label.error.unreadable': 'We could not read any text in this photo.',
   'label.error.unreadableHint': 'Retake it with more light, closer, and with the label as flat as possible.',
+  'label.error.lowConfidence': 'The reading came out too garbled to show you.',
+  'label.error.lowConfidenceHint': 'This usually happens when photographing a screen, a whole package or a nutrition table. Move closer to the ingredient list, or pick a screenshot from your device.',
   'label.error.noText': 'The photo was read, but no usable text came out.',
   'label.error.noTextHint': 'Retake it framing only the ingredient list.',
   'label.openCamera': 'Open camera',

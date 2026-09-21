@@ -106,6 +106,14 @@ async function getWorker(onProgress?: LabelOcrProgress): Promise<Worker> {
   return workerPromise;
 }
 
+/**
+ * Por debajo de esto, la lectura no se enseña.
+ *
+ * Medido: 95 en etiqueta limpia y en etiqueta degradada pero legible, 37 en
+ * la foto de una pantalla. 60 queda en mitad del hueco.
+ */
+const CONFIANZA_MINIMA = 60;
+
 function browserSupportsWasm(): boolean {
   return typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
 }
@@ -155,6 +163,21 @@ export const webLabelOcrProvider: LabelOcrProvider = {
       // arranque uno limpio en lugar de insistir con uno muerto.
       workerPromise = null;
       throw new LabelScanError(classifyOcrError(cause), (cause as Error)?.message);
+    }
+
+    // Puerta de confianza.
+    //
+    // El motor devuelve una confianza media por lectura, y separa los dos
+    // casos con holgura: 95 sobre una etiqueta limpia, 95 sobre una etiqueta
+    // con degradado, ruido, inclinación y JPEG malo que aun así se lee
+    // entera, y 37 sobre la foto de una pantalla con una tabla nutricional,
+    // que devolvía páginas de símbolos. El corte va en medio de ese hueco.
+    //
+    // Importa más de lo que parece: sin esto, la pantalla enseñaba la sopa
+    // como «texto detectado», que es justo lo que invita a darla por buena.
+    const confianza = (data as { confidence?: number }).confidence;
+    if (typeof confianza === 'number' && confianza < CONFIANZA_MINIMA) {
+      throw new LabelScanError('low_confidence', `confianza ${Math.round(confianza)}`);
     }
 
     onProgress?.(1);

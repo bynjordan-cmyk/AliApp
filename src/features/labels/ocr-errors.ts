@@ -23,7 +23,16 @@ export type LabelScanFailure =
   /** La foto no da texto: borrosa, oscura, lejos. */
   | 'unreadable_image'
   /** Se leyó algo, pero no llega ni a un puñado de caracteres. */
-  | 'no_text';
+  | 'no_text'
+  /**
+   * Salió texto de sobra, pero el motor no se fía de él.
+   *
+   * Es el caso de la foto de una pantalla, de un envase entero o de una tabla
+   * nutricional: el motor devuelve páginas de símbolos con toda la seguridad
+   * del mundo de que no son letras. Enseñar eso como «texto detectado» es
+   * peor que no enseñar nada, porque invita a darlo por bueno.
+   */
+  | 'low_confidence';
 
 /** Error con causa identificada. Lo que la pantalla sabe manejar. */
 export class LabelScanError extends Error {
@@ -131,6 +140,10 @@ export const FAILURE_COPY: Record<LabelScanFailure, FailureCopy> = {
   unreadable_image: {
     title: 'label.error.unreadable',
     hint: 'label.error.unreadableHint',
+  },
+  low_confidence: {
+    title: 'label.error.lowConfidence',
+    hint: 'label.error.lowConfidenceHint',
   },
   no_text: {
     title: 'label.error.noText',

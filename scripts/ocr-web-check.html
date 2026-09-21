@@ -119,6 +119,54 @@
         'leche', 'polvo', 'huevo', 'sal', 'cacao', 'soja',
       ];
 
+      /**
+       * Etiqueta D: lo que sale cuando alguien fotografía una pantalla, un
+       * envase entero o una tabla nutricional. No es texto: son líneas de
+       * tabla y ruido. El motor devuelve páginas de símbolos con toda la
+       * seguridad del mundo, y la única respuesta correcta es negarse a
+       * enseñarlo.
+       */
+      function pintarRuido() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 500;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        ctx.fillStyle = '#e8e8e8';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Rejilla de tabla, como la de una información nutricional.
+        ctx.strokeStyle = '#888';
+        for (let y = 40; y < canvas.height; y += 46) {
+          ctx.beginPath();
+          ctx.moveTo(20, y);
+          ctx.lineTo(canvas.width - 20, y);
+          ctx.stroke();
+        }
+        for (let x = 20; x < canvas.width; x += 180) {
+          ctx.beginPath();
+          ctx.moveTo(x, 40);
+          ctx.lineTo(x, canvas.height - 20);
+          ctx.stroke();
+        }
+
+        // Y el muaré de fotografiar una pantalla.
+        const datos = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixeles = datos.data;
+        for (let i = 0; i < pixeles.length; i += 4) {
+          const pixel = i / 4;
+          const muare = Math.sin((pixel % canvas.width) * 1.7) * 40;
+          const ruido = (Math.random() - 0.5) * 90;
+          pixeles[i] += muare + ruido;
+          pixeles[i + 1] += muare + ruido;
+          pixeles[i + 2] += muare + ruido;
+        }
+        ctx.putImageData(datos, 0, 0);
+
+        document.getElementById('lienzos').appendChild(canvas);
+        return canvas.toDataURL('image/jpeg', 0.5);
+      }
+
       const CATALOGO = [
         { canonicalKey: 'cow_milk', displayName: 'Leche de vaca' },
         { canonicalKey: 'wheat', displayName: 'Trigo' },
@@ -198,6 +246,14 @@
             statusByKey: ESTADOS,
           }).avoid.map((h) => `${h.matchedTerm}→${h.canonicalKey}`),
         };
+        // La puerta de confianza: esto NO puede llegar a la pantalla.
+        document.getElementById('estado').textContent = 'leyendo D (ruido)';
+        try {
+          const lecturaD = await webLabelOcrProvider.recognize({ uri: pintarRuido() });
+          salida.d = { rechazada: false, rawText: lecturaD.rawText };
+        } catch (error) {
+          salida.d = { rechazada: true, kind: error && error.kind, mensaje: String(error) };
+        }
       } catch (error) {
         salida.ok = false;
         salida.error = String(error && error.stack ? error.stack : error);
