@@ -1,0 +1,12 @@
+-- ---------------------------------------------------------------------------
+-- 0019 · search_path fijo en el ayudante del historial
+--
+-- `app.revision_ignored_keys()` devuelve una constante y no consulta nada, así
+-- que un search_path variable no puede cambiar lo que hace. Aun así se fija:
+-- el linter de Supabase lo señala, y una función de la capa de auditoría no es
+-- el sitio donde dejar una advertencia de seguridad sin responder.
+--
+-- Las otras cuatro funciones que el linter marca vienen de migraciones
+-- anteriores y se revisarán aparte; esta es la que introdujo 0018.
+-- ---------------------------------------------------------------------------
+alter function app.revision_ignored_keys() set search_path = pg_catalog;
