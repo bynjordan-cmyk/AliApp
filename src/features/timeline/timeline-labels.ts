@@ -92,3 +92,94 @@ export function timelineSubtitle(
       return null;
   }
 }
+
+/**
+ * Detalle desplegable de un evento: pares etiqueta/valor, ya traducidos.
+ *
+ * Solo describe lo registrado. No añade lecturas ni conclusiones sobre lo que
+ * significan esos datos juntos.
+ */
+export function timelineDetails(
+  item: TimelineItem,
+  translate: (key: TranslationKey) => string,
+  foodName: (canonicalKey: string) => string,
+): { label: string; value: string }[] {
+  const { metadata } = item;
+  const detalles: { label: string; value: string }[] = [];
+  const añadir = (label: string, value: unknown) => {
+    if (value === null || value === undefined || value === '') return;
+    detalles.push({ label, value: String(value) });
+  };
+
+  switch (item.type) {
+    case 'food_entry': {
+      const foods = Array.isArray(metadata.foods) ? metadata.foods : [];
+      for (const food of foods) {
+        if (typeof food !== 'object' || food === null) continue;
+        const row = food as { canonicalKey?: unknown; amountText?: unknown; isFirstExposure?: unknown };
+        const nombre = foodName(String(row.canonicalKey ?? ''));
+        const cantidad = row.amountText ? ` · ${String(row.amountText)}` : '';
+        const primera = row.isFirstExposure === true ? ` · ${translate('food.firstExposure')}` : '';
+        detalles.push({ label: nombre, value: `${cantidad}${primera}`.replace(/^ · /, '') });
+      }
+      if (typeof metadata.mealType === 'string') {
+        añadir(translate('food.mealType'), metadata.mealType);
+      }
+      break;
+    }
+    case 'breastfeed': {
+      if (typeof metadata.side === 'string') {
+        const clave = `breastfeed.${metadata.side}` as TranslationKey;
+        añadir(translate('quickLog.breastfeed'), translate(clave));
+      }
+      if (typeof metadata.durationMinutes === 'number') {
+        añadir(translate('health.startedAt'), `${metadata.durationMinutes} min`);
+      }
+      break;
+    }
+    case 'diaper_event': {
+      if (typeof metadata.stoolConsistency === 'string') {
+        añadir(translate('diaper.consistency'), metadata.stoolConsistency);
+      }
+      if (typeof metadata.stoolColor === 'string') {
+        añadir(translate('diaper.color'), metadata.stoolColor);
+      }
+      if (metadata.mucus === true) añadir(translate('diaper.mucus'), translate('common.yes'));
+      if (metadata.bloodObserved === true) {
+        añadir(translate('diaper.blood'), translate('common.yes'));
+      }
+      break;
+    }
+    case 'symptom': {
+      if (typeof metadata.severity === 'number' && metadata.severity >= 1 && metadata.severity <= 3) {
+        const clave = `health.severity${metadata.severity}` as TranslationKey;
+        añadir(translate('health.severity'), translate(clave));
+      }
+      if (typeof metadata.endedAt === 'string') {
+        añadir(translate('health.endedAt'), metadata.endedAt);
+      }
+      break;
+    }
+    case 'reaction_episode': {
+      if (typeof metadata.symptomCount === 'number') {
+        añadir(translate('health.symptoms'), metadata.symptomCount);
+      }
+      break;
+    }
+    case 'medication_event': {
+      if (typeof metadata.doseText === 'string') añadir(translate('quickLog.dose'), metadata.doseText);
+      if (typeof metadata.reasonText === 'string') {
+        añadir(translate('common.notes'), metadata.reasonText);
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  if (typeof metadata.notes === 'string' && metadata.notes) {
+    añadir(translate('common.notes'), metadata.notes);
+  }
+
+  return detalles;
+}

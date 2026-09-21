@@ -35,6 +35,10 @@ export default function RootLayout() {
                   name="quick-log"
                   options={{ presentation: 'modal', headerShown: false }}
                 />
+                <Stack.Screen
+                  name="reaction-builder"
+                  options={{ presentation: 'modal', headerShown: false }}
+                />
               </Stack>
             </ActiveBabyProvider>
           </SessionProvider>

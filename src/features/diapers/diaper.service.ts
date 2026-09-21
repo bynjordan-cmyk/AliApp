@@ -24,8 +24,12 @@ export async function createDiaperEvent(
         diaper_type: input.diaperType,
         stool_consistency: input.stoolConsistency ?? null,
         stool_color: input.stoolColor ?? null,
+        stool_amount: input.stoolAmount ?? null,
         mucus: input.mucus ?? null,
         blood_observed: input.bloodObserved ?? null,
+        visible_food_residue: input.visibleFoodResidue ?? null,
+        straining: input.straining ?? null,
+        unusual_odor: input.unusualOdor ?? null,
         notes: input.notes ?? null,
         created_by: context.createdBy,
       })

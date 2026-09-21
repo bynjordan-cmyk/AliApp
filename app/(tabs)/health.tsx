@@ -1,120 +1,102 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import {
-  QueryState,
-  PageHeader,
   Chip,
   EmptyState,
-  ListItem,
+  PageHeader,
+  QueryState,
   Screen,
-  SectionHeader,
   Text,
   colors,
-  eventColors,
   spacing,
 } from '@/design-system';
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
 import { BabySelector } from '@/features/baby/BabySelector';
+import { EpisodeList } from '@/features/reactions/EpisodeList';
+import { DiaperList } from '@/features/diapers/DiaperList';
+import { MedicationList } from '@/features/medication/MedicationList';
+import { SymptomCard } from '@/features/symptoms/SymptomCard';
 import { useSymptoms } from '@/features/symptoms/useSymptoms';
-import { symptomTypeKey } from '@/features/timeline/timeline-labels';
-import { formatDate, formatTime } from '@/lib/dates';
-import { useI18n } from '@/lib/i18n';
+import { useT } from '@/lib/i18n';
 
-type HealthTab = 'symptoms' | 'episodes' | 'diapers' | 'medications' | 'attachments';
+type HealthTab = 'symptoms' | 'episodes' | 'diapers' | 'medications';
 
 /**
- * Pestaña Salud (§14).
+ * Pantalla Salud (§14).
  *
- * Síntomas y episodios de reacción son objetos distintos y se listan por
- * separado: un síntoma existe por sí mismo y solo se agrupa cuando una persona
- * decide agruparlo (§27).
+ * Síntomas y episodios son objetos distintos y se listan por separado: un
+ * síntoma existe por sí mismo y solo se agrupa cuando una persona lo decide.
+ *
+ * Aviso de seguridad: UNO solo, al pie. Repetirlo en cada sección lo convierte
+ * en ruido que nadie lee.
  */
 export default function HealthScreen() {
-  const { t, locale } = useI18n();
+  const t = useT();
+  const router = useRouter();
   const { baby } = useActiveBaby();
   const [tab, setTab] = useState<HealthTab>('symptoms');
 
   const symptoms = useSymptoms(baby?.id ?? null);
 
-  // La base guarda una clave estable; el texto visible se resuelve aquí (§20).
-  const translateSymptom = (value: string) => {
-    const key = symptomTypeKey(value);
-    return key ? t(key) : value;
-  };
-
   if (!baby) {
     return (
       <Screen>
-        <EmptyState title={t('today.noBaby')} />
+        <PageHeader title={t('health.title')} />
+        <EmptyState title={t('today.noBaby')} description={t('today.noBabyHint')} />
       </Screen>
     );
   }
 
   return (
     <Screen>
-      <PageHeader title={t('health.title')} icon="heart-outline" />
+      <PageHeader title={t('health.title')} />
       <BabySelector />
 
       <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
-        <Chip
-          label={t('health.symptoms')}
-          selected={tab === 'symptoms'}
-          onPress={() => setTab('symptoms')}
-        />
-        <Chip
-          label={t('health.episodes')}
-          selected={tab === 'episodes'}
-          onPress={() => setTab('episodes')}
-        />
-        <Chip
-          label={t('health.diapers')}
-          selected={tab === 'diapers'}
-          onPress={() => setTab('diapers')}
-        />
-        <Chip
-          label={t('health.medications')}
-          selected={tab === 'medications'}
-          onPress={() => setTab('medications')}
-        />
-        <Chip
-          label={t('health.attachments')}
-          selected={tab === 'attachments'}
-          onPress={() => setTab('attachments')}
-        />
+        {(
+          [
+            ['symptoms', t('health.symptoms')],
+            ['episodes', t('health.episodes')],
+            ['diapers', t('health.diapers')],
+            ['medications', t('health.medications')],
+          ] as const
+        ).map(([value, label]) => (
+          <Chip key={value} label={label} selected={tab === value} onPress={() => setTab(value)} />
+        ))}
       </View>
 
-      <QueryState
-        loading={tab === 'symptoms' && symptoms.isLoading}
-        error={tab === 'symptoms' && symptoms.isError}
-        onRetry={() => {
-          void symptoms.refetch();
-        }}
-      >
-        {tab === 'symptoms' ? (
-          <View style={{ gap: spacing.sm }}>
-            <SectionHeader title={t('health.symptoms')} subtitle={t('safety.notDiagnostic')} />
-            {(symptoms.data ?? []).map((symptom) => (
-              <ListItem
-                key={symptom.id}
-                title={translateSymptom(symptom.symptom_type)}
-                subtitle={
-                  symptom.severity
-                    ? t(`health.severity${symptom.severity}` as 'health.severity1')
-                    : undefined
-                }
-                meta={`${formatDate(symptom.started_at, locale)} · ${formatTime(symptom.started_at, locale)}`}
-                tint={eventColors.symptom}
-              />
-            ))}
-            {(symptoms.data ?? []).length === 0 ? <EmptyState title={t('common.empty')} /> : null}
-          </View>
-        ) : null}
+      {tab === 'symptoms' ? (
+        <QueryState
+          loading={symptoms.isLoading}
+          error={symptoms.isError}
+          onRetry={() => {
+            void symptoms.refetch();
+          }}
+        >
+          {(symptoms.data ?? []).length === 0 ? (
+            <EmptyState title={t('health.noSymptoms')} description={t('health.noSymptomsHint')} />
+          ) : (
+            <View style={{ gap: spacing.md }}>
+              {(symptoms.data ?? []).map((symptom) => (
+                <SymptomCard
+                  key={symptom.id}
+                  symptom={symptom}
+                  onGroup={(symptomId) =>
+                    router.push({ pathname: '/reaction-builder', params: { symptomId } })
+                  }
+                />
+              ))}
+            </View>
+          )}
+        </QueryState>
+      ) : null}
 
-        {tab !== 'symptoms' ? (
-          <EmptyState title={t('common.empty')} description={t('safety.consultProfessional')} />
-        ) : null}
-      </QueryState>
+      {tab === 'episodes' ? <EpisodeList babyId={baby.id} /> : null}
+      {tab === 'diapers' ? <DiaperList babyId={baby.id} /> : null}
+      {tab === 'medications' ? <MedicationList babyId={baby.id} /> : null}
+
       <Text variant="caption" color={colors.textSecondary}>
         {t('safety.notDiagnostic')}
       </Text>

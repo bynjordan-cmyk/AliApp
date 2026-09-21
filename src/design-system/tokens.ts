@@ -117,6 +117,25 @@ export const typography = {
 
 export type TypographyVariant = keyof typeof typography;
 
+/**
+ * Superficies de acento por familia de evento.
+ *
+ * Son fondos suaves, no etiquetas de estado: acompañan siempre a un icono y a
+ * un texto, nunca comunican nada por sí solas (§21).
+ */
+export const surfaces = {
+  feeding: { background: palette.softCoral, ink: palette.navy, accent: palette.coral },
+  breastfeed: { background: palette.softLavender, ink: palette.navy, accent: palette.lavender },
+  diaper: { background: palette.softAqua, ink: palette.navy, accent: palette.aqua },
+  symptom: { background: palette.softSunshine, ink: palette.navy, accent: palette.sunshine },
+  episode: { background: '#EEF3FB', ink: palette.navy, accent: palette.navy },
+  medication: { background: palette.softLavender, ink: palette.navy, accent: palette.lavender },
+  journey: { background: '#EEF3FB', ink: palette.navy, accent: palette.navy },
+  neutral: { background: palette.background, ink: palette.navy, accent: palette.line },
+} as const;
+
+export type SurfaceTone = keyof typeof surfaces;
+
 export const elevation = {
   none: {},
   card: {
@@ -132,6 +151,14 @@ export const elevation = {
     shadowRadius: 28,
     shadowOffset: { width: 0, height: -6 },
     elevation: 12,
+  },
+  /** Para la tarjeta protagonista de Hoy: más presencia, sin estridencia. */
+  hero: {
+    shadowColor: palette.navy,
+    shadowOpacity: 0.10,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
   },
 } as const;
 

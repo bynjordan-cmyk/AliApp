@@ -3,10 +3,11 @@ import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
-  QueryState,
-  PageHeader,
   Card,
   EmptyState,
+  HeroCard,
+  PageHeader,
+  QueryState,
   Screen,
   SectionHeader,
   Text,
@@ -19,9 +20,10 @@ import { BabySelector } from '@/features/baby/BabySelector';
 import { useActiveJourneys } from '@/features/journeys/useJourneys';
 import { DailySummary } from '@/features/today/DailySummary';
 import { QuickLogFab } from '@/features/today/QuickLogFab';
-import { TimelineList } from '@/features/timeline/TimelineList';
+import { buildHighlight } from '@/features/today/highlight';
+import { TimelineRail } from '@/features/timeline/TimelineRail';
 import { useTimeline } from '@/features/timeline/useTimeline';
-import { useT } from '@/lib/i18n';
+import { useI18n } from '@/lib/i18n';
 
 /** Ancho de la vista de dos columnas en escritorio. */
 const WIDE_LAYOUT_WIDTH = 1080;
@@ -29,15 +31,12 @@ const WIDE_LAYOUT_WIDTH = 1080;
 /**
  * Pantalla Hoy (§14).
  *
- * Muestra hechos del día y da acceso inmediato al registro rápido. En pantalla
- * ancha se reparte en dos columnas —contexto a la izquierda, línea de tiempo a
- * la derecha— en lugar de apilar todo en una tira vertical.
- *
- * La tarjeta "qué ha cambiado" solo mostrará deltas descriptivos: nunca una
- * conclusión.
+ * Abre con un hecho del día —"Lo importante hoy"—, sigue con el recuento de lo
+ * registrado y termina con la línea de tiempo narrada. Nada de todo eso
+ * interpreta: describe.
  */
 export default function TodayScreen() {
-  const t = useT();
+  const { t } = useI18n();
   const { baby } = useActiveBaby();
   const { isDesktop } = useLayout();
 
@@ -51,44 +50,44 @@ export default function TodayScreen() {
 
   const timeline = useTimeline(baby?.id ?? null, range);
   const journeys = useActiveJourneys(baby?.id ?? null);
-  const todayItems = timeline.days[0]?.items ?? [];
+  const todayItems = useMemo(() => timeline.days[0]?.items ?? [], [timeline.days]);
+
+  const highlight = useMemo(
+    () => buildHighlight({ items: todayItems, journeys: journeys.data ?? [] }),
+    [todayItems, journeys.data],
+  );
 
   if (!baby) {
     return (
       <Screen>
-        <EmptyState title={t('today.noBaby')} description={t('safety.notDiagnostic')} />
+        <PageHeader title={t('today.title')} />
+        <EmptyState title={t('today.noBaby')} description={t('today.noBabyHint')} />
       </Screen>
     );
   }
 
-  const context = (
+  const contexto = (
     <View style={styles.stack}>
+      <HeroCard
+        eyebrow={t('today.highlight.eyebrow')}
+        title={t(highlight.titleKey)}
+        description={t(highlight.bodyKey, highlight.params)}
+        icon={highlight.icon}
+        tone={highlight.tone}
+      />
+
       <DailySummary items={todayItems} />
 
-      <Card tone={journeys.data && journeys.data.length > 0 ? 'calm' : 'plain'}>
-        <Text variant="subtitle">{t('today.activeJourney')}</Text>
-        {journeys.data && journeys.data.length > 0 ? (
-          journeys.data.map((journey) => (
-            <Text key={journey.id}>
-              {t(`journeys.type.${journey.journey_type}` as const)} ·{' '}
-              {t(`journeys.status.${journey.status}` as const)}
-            </Text>
-          ))
-        ) : (
-          <Text color={colors.textSecondary}>{t('today.noActiveJourney')}</Text>
-        )}
-      </Card>
-
-      <Card tone="highlight">
+      <Card tone="calm">
         <Text variant="subtitle">{t('today.changes')}</Text>
         <Text color={colors.textSecondary}>{t('today.changesPlaceholder')}</Text>
       </Card>
     </View>
   );
 
-  const timelineBlock = (
+  const lineaDeTiempo = (
     <View style={styles.stack}>
-      <SectionHeader title={t('today.timeline')} />
+      <SectionHeader title={t('today.timeline')} subtitle={t('today.timelineHint')} />
       <QueryState
         loading={timeline.isLoading}
         error={timeline.isError}
@@ -96,7 +95,11 @@ export default function TodayScreen() {
           void timeline.refetch();
         }}
       >
-        <TimelineList days={timeline.days} />
+        {timeline.days.length === 0 ? (
+          <EmptyState title={t('timeline.emptyDay')} description={t('timeline.emptyHint')} />
+        ) : (
+          <TimelineRail days={timeline.days} />
+        )}
       </QueryState>
     </View>
   );
@@ -104,18 +107,18 @@ export default function TodayScreen() {
   return (
     <View style={styles.root}>
       <Screen maxWidth={isDesktop ? WIDE_LAYOUT_WIDTH : undefined} bottomSpace={spacing.xxxl * 2}>
-        <PageHeader title={t('today.title')} icon="sunny-outline" />
+        <PageHeader title={t('today.title')} />
         <BabySelector />
 
         {isDesktop ? (
           <View style={styles.columns}>
-            <View style={styles.contextColumn}>{context}</View>
-            <View style={styles.timelineColumn}>{timelineBlock}</View>
+            <View style={styles.contextColumn}>{contexto}</View>
+            <View style={styles.timelineColumn}>{lineaDeTiempo}</View>
           </View>
         ) : (
           <>
-            {context}
-            {timelineBlock}
+            {contexto}
+            {lineaDeTiempo}
           </>
         )}
 

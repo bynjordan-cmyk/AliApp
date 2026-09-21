@@ -49,14 +49,23 @@ export const breastfeedSchema = z
     { message: 'La toma no puede terminar antes de empezar', path: ['endedAt'] },
   );
 
+/**
+ * Pañal. Todo el detalle es opcional y descriptivo: describe lo observado sin
+ * interpretarlo. Ninguna combinación de campos significa nada por sí sola.
+ */
 export const diaperEventSchema = z.object({
   babyId: uuidSchema,
   occurredAt: occurredAtSchema,
   diaperType: z.enum(['urine', 'stool', 'both']),
   stoolConsistency: z.string().trim().max(60).optional(),
   stoolColor: z.string().trim().max(60).optional(),
+  stoolAmount: z.enum(['scant', 'moderate', 'large']).optional(),
   mucus: z.boolean().optional(),
   bloodObserved: z.boolean().optional(),
+  /** Restos reconocibles de comida. Es una observación, no una relación causal. */
+  visibleFoodResidue: z.boolean().optional(),
+  straining: z.boolean().optional(),
+  unusualOdor: z.boolean().optional(),
   notes: optionalNotesSchema,
 });
 
