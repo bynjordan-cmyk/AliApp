@@ -30,6 +30,8 @@ const SCALAR_TYPES = new Map([
   ['timestamp with time zone', 'string'],
   ['timestamp without time zone', 'string'],
   ['time with time zone', 'string'],
+  ['time without time zone', 'string'],
+  ['date', 'string'],
   ['interval', 'string'],
   ['smallint', 'number'],
   ['integer', 'number'],

@@ -657,8 +657,8 @@ export type Database = {
           profile_id: string;
           household_id: string;
           push_enabled: boolean;
-          quiet_hours_start: unknown | null;
-          quiet_hours_end: unknown | null;
+          quiet_hours_start: string | null;
+          quiet_hours_end: string | null;
           device_timezone: string | null;
           push_token: string | null;
           created_at: string;
@@ -668,8 +668,8 @@ export type Database = {
           profile_id: string;
           household_id: string;
           push_enabled?: boolean;
-          quiet_hours_start?: unknown | null;
-          quiet_hours_end?: unknown | null;
+          quiet_hours_start?: string | null;
+          quiet_hours_end?: string | null;
           device_timezone?: string | null;
           push_token?: string | null;
           created_at?: string;
@@ -679,8 +679,8 @@ export type Database = {
           profile_id?: string;
           household_id?: string;
           push_enabled?: boolean;
-          quiet_hours_start?: unknown | null;
-          quiet_hours_end?: unknown | null;
+          quiet_hours_start?: string | null;
+          quiet_hours_end?: string | null;
           device_timezone?: string | null;
           push_token?: string | null;
           created_at?: string;

@@ -15,7 +15,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.aliapp.app"
+      "bundleIdentifier": "com.aliapp.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "AliApp usa la cámara para que puedas adjuntar fotos a lo que registras.",
+        "NSPhotoLibraryUsageDescription": "AliApp accede a tus fotos para que puedas adjuntarlas a lo que registras."
+      }
     },
     "android": {
       "package": "com.aliapp.app",
@@ -25,7 +29,12 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -42,6 +51,14 @@
           "backgroundColor": "#FFFFFF",
           "image": "./assets/splash-icon.png",
           "imageWidth": 180
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#FF6B6B",
+          "defaultChannel": "default"
         }
       ]
     ],

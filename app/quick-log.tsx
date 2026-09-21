@@ -14,10 +14,12 @@ import {
   colors,
   spacing,
 } from '@/design-system';
+import { ReminderPrompt } from '@/features/notifications/ReminderPrompt';
 import { useSession } from '@/features/auth/SessionProvider';
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
 import { useCreateBabyFoodEntry, useCreateBreastfeed } from '@/features/feeding/useFeeding';
 import { useFoods } from '@/features/food/useFoods';
+import { MediaStrip } from '@/features/media/MediaStrip';
 import { useCreateSymptom } from '@/features/symptoms/useSymptoms';
 import { createDiaperEvent } from '@/features/diapers/diaper.service';
 import { createMedicationEvent } from '@/features/medication/medication.service';
@@ -369,7 +371,30 @@ function SymptomForm({ babyId, context, onDone, onError }: FormProps) {
   const t = useT();
   const [symptomType, setSymptomType] = useState<string | null>(null);
   const [severity, setSeverity] = useState<SymptomSeverity | undefined>(undefined);
+  // Id del síntoma recién guardado: con él se ofrece el recordatorio y se
+  // pueden adjuntar fotos sin salir de la hoja.
+  const [guardado, setGuardado] = useState<string | null>(null);
   const mutation = useCreateSymptom(context);
+
+  if (guardado) {
+    return (
+      <View style={styles.detalle}>
+        <ReminderPrompt
+          category="symptom_followup"
+          title={t('reminders.category.symptom_followup')}
+          babyId={babyId}
+          relatedEntityType="symptom"
+          relatedEntityId={guardado}
+          onDismiss={onDone}
+        />
+        <Card>
+          <Text variant="subtitle">{t('common.photos')}</Text>
+          <MediaStrip entityType="symptom" entityId={guardado} category="skin" />
+          <Button label={t('common.done')} onPress={onDone} />
+        </Card>
+      </View>
+    );
+  }
 
   const commonTypes = ['skin_rash', 'vomiting', 'diarrhea', 'irritability', 'cough'];
 
@@ -409,7 +434,10 @@ function SymptomForm({ babyId, context, onDone, onError }: FormProps) {
           if (!symptomType) return;
           mutation.mutate(
             { babyId, symptomType, startedAt: new Date().toISOString(), severity },
-            { onSuccess: onDone, onError: (cause) => onError(cause.message) },
+            {
+              onSuccess: (symptom) => setGuardado(symptom.id),
+              onError: (cause) => onError(cause.message),
+            },
           );
         }}
       />

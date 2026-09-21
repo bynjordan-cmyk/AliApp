@@ -106,3 +106,31 @@ export type MediaCategory = Enums<'media_category'>;
 // --- Vistas ----------------------------------------------------------------
 export type TimelineEventRow = Views<'timeline_events'>;
 export type AllergenBoardRow = Views<'allergen_board'>;
+
+// --- Avisos y recordatorios -------------------------------------------------
+export type Reminder = Tables<'reminders'>;
+export type NotificationPreference = Tables<'notification_preferences'>;
+export type NotificationSettings = Tables<'notification_settings'>;
+export type ReminderCategory = Enums<'reminder_category'>;
+export type ReminderStatus = Enums<'reminder_status'>;
+
+/**
+ * Categorías de aviso que ofrece la interfaz.
+ *
+ * AliApp no crea ninguna por su cuenta ni propone horarios: cada recordatorio
+ * lo configura una persona.
+ */
+export const REMINDER_CATEGORIES: readonly ReminderCategory[] = [
+  'feeding',
+  'breastfeeding',
+  'symptom_followup',
+  'open_episode',
+  'medication',
+  'journey_review',
+  'reintroduction',
+  'daily_summary',
+  'household_updates',
+] as const;
+
+// --- Detalle de deposición --------------------------------------------------
+export type StoolAmount = Enums<'stool_amount'>;
