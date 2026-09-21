@@ -28,19 +28,24 @@ const LANGS = ['spa', 'eng'];
 /**
  * De dónde se carga el motor.
  *
- * Por defecto, del CDN público de tesseract.js: es lo que funciona sin montar
- * nada y lo que el navegador cachea después de la primera lectura.
+ * Por defecto, del PROPIO dominio de AliApp (`/ocr`, servido desde `public/`).
+ * La lectura de etiquetas no hace así ni una sola petición a terceros: ni la
+ * foto ni el hecho de que alguien esté leyendo una etiqueta salen de aquí.
  *
- * Con `EXPO_PUBLIC_OCR_ASSET_BASE` se sirve desde el propio dominio de AliApp
- * (por ejemplo `/ocr`), y entonces la lectura de etiquetas no hace UNA sola
- * petición a terceros. Recomendable en producción; ver `docs/label-scan.md`.
+ * `EXPO_PUBLIC_OCR_ASSET_BASE=cdn` vuelve al CDN público de tesseract.js, y
+ * cualquier otro valor apunta a otra ruta. Ver `docs/label-scan.md`.
  *
- * En los dos casos la FOTO se queda en el dispositivo: lo que viaja es el
- * motor, nunca la imagen.
+ * En todos los casos la FOTO se queda en el dispositivo: lo que viaja —si
+ * viaja— es el motor, nunca la imagen.
  */
-const ASSET_BASE = process.env.EXPO_PUBLIC_OCR_ASSET_BASE;
+const DEFAULT_ASSET_BASE = '/ocr';
+const CDN = 'cdn';
+
+const configurado = process.env.EXPO_PUBLIC_OCR_ASSET_BASE;
+const ASSET_BASE = configurado === CDN ? null : (configurado ?? DEFAULT_ASSET_BASE);
 
 function assetPaths() {
+  // null = que tesseract.js use sus rutas públicas por defecto.
   if (!ASSET_BASE) return {};
 
   const base = ASSET_BASE.replace(/\/$/, '');

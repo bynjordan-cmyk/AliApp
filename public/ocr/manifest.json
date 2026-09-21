@@ -1,0 +1,12 @@
+{
+  "tesseractVersion": "7.0.0",
+  "cores": [
+    "tesseract-core-lstm.wasm.js",
+    "tesseract-core-simd-lstm.wasm.js",
+    "tesseract-core-relaxedsimd-lstm.wasm.js"
+  ],
+  "langs": [
+    "spa",
+    "eng"
+  ]
+}

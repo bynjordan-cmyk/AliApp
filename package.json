@@ -19,7 +19,8 @@
     "db:psql": "./scripts/db-local.sh psql",
     "db:types": "node scripts/gen-db-types.mjs",
     "format": "prettier --write .",
-    "test:ocr:web": "node scripts/ocr-web-check.mjs"
+    "test:ocr:web": "node scripts/ocr-web-check.mjs",
+    "ocr:assets": "node scripts/prepare-ocr-assets.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",

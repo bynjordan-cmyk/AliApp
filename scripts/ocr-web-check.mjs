@@ -20,19 +20,8 @@
  */
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import {
-  createReadStream,
-  createWriteStream,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import { cp, readdir } from 'node:fs/promises';
-import { Buffer } from 'node:buffer';
-import { createGzip } from 'node:zlib';
-import { pipeline } from 'node:stream/promises';
+import { createReadStream, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cp } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -98,64 +87,37 @@ function transpilar() {
   }
 }
 
-/** Datos de idioma: del sistema si están, y si no del CDN de tesseract. */
-async function prepararIdiomas() {
-  const destino = path.join(WORK, 'ocr', 'lang');
-  mkdirSync(destino, { recursive: true });
-
-  for (const idioma of ['spa', 'eng']) {
-    const salida = path.join(destino, `${idioma}.traineddata.gz`);
-    if (existsSync(salida)) continue;
-
-    const candidatos = [
-      process.env.ALIAPP_TESSDATA_DIR,
-      '/usr/share/tesseract-ocr/5/tessdata',
-      '/usr/share/tesseract-ocr/4.00/tessdata',
-      '/usr/share/tessdata',
-      '/opt/homebrew/share/tessdata',
-    ].filter(Boolean);
-
-    const local = candidatos
-      .map((dir) => path.join(dir, `${idioma}.traineddata`))
-      .find((ruta) => existsSync(ruta));
-
-    if (local) {
-      await pipeline(createReadStream(local), createGzip(), createWriteStream(salida));
-      log(`  · ${idioma}: del sistema`);
-      continue;
-    }
-
-    const url = `https://tessdata.projectnaptha.com/4.0.0/${idioma}.traineddata.gz`;
-    const respuesta = await fetch(url);
-    if (!respuesta.ok) {
-      throw new Error(
-        `No hay datos de idioma para "${idioma}". Instala tesseract-ocr-${idioma} ` +
-          `o deja que ${url} sea accesible.`,
-      );
-    }
-    writeFileSync(salida, Buffer.from(await respuesta.arrayBuffer()));
-    log(`  · ${idioma}: descargado`);
-  }
-}
-
+/**
+ * Usa los MISMOS assets que se publican (`public/ocr`), no una copia hecha
+ * para la ocasión. Si lo que se despliega estuviera roto o desfasado, esta
+ * comprobación tiene que enterarse antes que una madre con el envase en la
+ * mano.
+ */
 async function prepararMotor() {
   const ocr = path.join(WORK, 'ocr');
-  const core = path.join(ocr, 'core');
   const vendor = path.join(WORK, 'vendor');
-  mkdirSync(core, { recursive: true });
+  const publicados = path.join(ROOT, 'public', 'ocr');
   mkdirSync(vendor, { recursive: true });
 
-  await cp(
-    path.join(ROOT, 'node_modules/tesseract.js/dist/worker.min.js'),
-    path.join(ocr, 'worker.min.js'),
-  );
-
-  const dirCore = path.join(ROOT, 'node_modules/tesseract.js-core');
-  for (const fichero of await readdir(dirCore)) {
-    if (fichero.endsWith('.js') || fichero.endsWith('.wasm')) {
-      await cp(path.join(dirCore, fichero), path.join(core, fichero));
-    }
+  if (!existsSync(publicados)) {
+    throw new Error('Falta public/ocr. Ejecuta primero: npm run ocr:assets');
   }
+
+  await cp(publicados, ocr, { recursive: true });
+
+  const instalada = JSON.parse(
+    readFileSync(path.join(ROOT, 'node_modules/tesseract.js/package.json'), 'utf8'),
+  ).version;
+  const manifiesto = JSON.parse(readFileSync(path.join(ocr, 'manifest.json'), 'utf8'));
+
+  if (manifiesto.tesseractVersion !== instalada) {
+    throw new Error(
+      `public/ocr se copió para tesseract.js ${manifiesto.tesseractVersion} y hay ` +
+        `instalada la ${instalada}. Ejecuta: npm run ocr:assets`,
+    );
+  }
+
+  log(`  · motor publicado: tesseract.js ${manifiesto.tesseractVersion}`);
 
   await cp(
     path.join(ROOT, 'node_modules/tesseract.js/dist/tesseract.esm.min.js'),
@@ -237,9 +199,8 @@ async function main() {
   log('→ transpilando los módulos del repositorio');
   transpilar();
 
-  log('→ preparando el motor y los idiomas');
+  log('→ usando el motor que se publica (public/ocr)');
   await prepararMotor();
-  await prepararIdiomas();
 
   log(`→ sirviendo en http://127.0.0.1:${PORT}`);
   const servidor = await servir();

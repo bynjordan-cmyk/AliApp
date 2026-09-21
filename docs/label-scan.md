@@ -71,28 +71,41 @@ La foto **no sale del dispositivo**: se dibuja en un canvas, se convierte en un
 data URL y va directa al motor, que corre en la propia pestaña. No se sube a
 ningún servicio de reconocimiento y no se guarda en AliApp.
 
-Lo único que viaja por la red es el **motor**: el WebAssembly y los datos de
-idioma. Por defecto se cargan del CDN público de tesseract.js y el navegador
-los cachea tras la primera lectura.
+El **motor** tampoco viaja desde un tercero. AliApp lo sirve desde su propio
+dominio, en `/ocr`, así que leer una etiqueta no hace **ninguna** petición
+fuera: ni la foto, ni el hecho de que alguien esté leyendo una etiqueta.
 
-Para que la lectura de etiquetas no haga **ninguna** petición a terceros, se
-sirve el motor desde el propio dominio:
+Los assets viven en `public/ocr/`, que Expo copia al export, y se regeneran con:
 
 ```bash
-EXPO_PUBLIC_OCR_ASSET_BASE=/ocr
+npm run ocr:assets
 ```
 
-con esta estructura bajo la raíz pública:
-
 ```
-/ocr/worker.min.js              node_modules/tesseract.js/dist/worker.min.js
-/ocr/core/…                     node_modules/tesseract.js-core/*.{js,wasm}
-/ocr/lang/spa.traineddata.gz    datos de idioma
-/ocr/lang/eng.traineddata.gz
+public/ocr/worker.min.js            de node_modules/tesseract.js
+public/ocr/core/*-lstm.wasm.js      los tres núcleos LSTM (con y sin SIMD)
+public/ocr/lang/spa.traineddata.gz  datos de idioma
+public/ocr/lang/eng.traineddata.gz
+public/ocr/manifest.json            para qué versión de tesseract.js se copió
 ```
 
-Son unos 3 MB de datos de idioma más el núcleo WASM. No se versiona en el
-repositorio: se copia en el despliegue.
+Son unos 15 MB en disco. Se sirven comprimidos y el navegador los cachea, así
+que el coste es de la primera lectura y solo de esa.
+
+Los **tres** núcleos son necesarios: el worker elige uno según lo que admita el
+navegador (relaxed SIMD → SIMD → sin SIMD) y si el que elige no está, falla.
+
+El `manifest.json` existe para un fallo muy concreto: actualizar tesseract.js y
+olvidar volver a copiar el motor. `npm run test:ocr:web` compara la versión del
+manifiesto con la instalada y se niega a pasar si no coinciden.
+
+Para volver al CDN público (por ejemplo, para no versionar los binarios):
+
+```bash
+EXPO_PUBLIC_OCR_ASSET_BASE=cdn
+```
+
+Cualquier otro valor se usa como ruta base.
 
 ## iOS y Android
 
@@ -143,12 +156,17 @@ A y nada en B.
 Que los textos sean distintos importa: un motor mal conectado que devolviera
 siempre lo mismo pasaría cualquier prueba que solo mirase una imagen.
 
-Necesita Playwright y los datos de idioma. En una máquina sin ellos:
+Usa **los mismos assets que se publican** (`public/ocr`), no una copia hecha
+para la ocasión: si lo desplegado estuviera roto o desfasado, esta comprobación
+se entera antes que una madre con el envase en la mano.
+
+Necesita Playwright. En una máquina donde no sea dependencia del proyecto:
 
 ```bash
-apt-get install tesseract-ocr-spa tesseract-ocr-eng   # o deja el CDN accesible
 ALIAPP_PLAYWRIGHT_PATH=… ALIAPP_CHROMIUM_PATH=… npm run test:ocr:web
 ```
+
+Y si `public/ocr` no existe, lo dice y manda ejecutar `npm run ocr:assets`.
 
 El fixture (`providers/fixture.ts`) queda **solo para pruebas**. Si apareciera
 en un dispositivo, la pantalla lo diría con todas las letras.

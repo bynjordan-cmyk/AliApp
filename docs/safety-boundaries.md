@@ -81,8 +81,9 @@ leída coincide con la lista de esa familia. No dice nada del producto, y el
 texto en pantalla lo dice con esas palabras (`label.noMatchesHint`).
 
 El OCR es real en las tres plataformas: tesseract.js sobre WebAssembly en el
-navegador y ML Kit en el teléfono, siempre en el dispositivo. El detalle vive
-en `label-scan.md`.
+navegador y ML Kit en el teléfono, siempre en el dispositivo. Ni la foto ni el
+motor pasan por un tercero: AliApp sirve el motor desde su propio dominio. El
+detalle vive en `label-scan.md`.
 
 Dos consecuencias para la seguridad del producto:
 
