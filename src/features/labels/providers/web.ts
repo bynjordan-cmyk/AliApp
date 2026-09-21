@@ -80,7 +80,22 @@ async function getWorker(onProgress?: LabelOcrProgress): Promise<Worker> {
         if (mensaje.status === 'recognizing text') return;
         onProgress?.(Math.min(0.5, mensaje.progress * 0.5));
       },
-    }).catch((cause: unknown) => {
+    })
+      .then(async (worker) => {
+        // Una lista de ingredientes es UN bloque de texto corrido, no una
+        // página con columnas. Con el modo automático, tesseract intenta
+        // analizar la maquetación del envase entero —logotipos, tabla
+        // nutricional, códigos— y devuelve una sopa. El modo de bloque único
+        // se centra en leer.
+        await worker.setParameters({
+          tessedit_pageseg_mode: '6' as never,
+          // Sin esto, tesseract adivina los puntos por pulgada de una foto que
+          // no los trae, y avisa por consola en cada lectura.
+          user_defined_dpi: '300',
+        });
+        return worker;
+      })
+      .catch((cause: unknown) => {
       // Un fallo al cargar no debe dejar el worker envenenado para siempre:
       // se olvida para que el siguiente intento vuelva a probar de cero.
       workerPromise = null;
@@ -94,6 +109,21 @@ async function getWorker(onProgress?: LabelOcrProgress): Promise<Worker> {
 function browserSupportsWasm(): boolean {
   return typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
 }
+
+/**
+ * La foto va al motor TAL CUAL.
+ *
+ * Hubo aquí un paso de preparación —reducir, pasar a gris y estirar el
+ * contraste entre los percentiles 2 y 98— que parecía sensato y medía fatal.
+ * Sobre una etiqueta con ruido, el recorte del 2 % caía en gris 123, muy por
+ * encima del texto, así que el estirado multiplicaba por 2,6 el ruido del
+ * fondo y lo convertía en manchas que el motor leía como letras: de doce
+ * palabras esperadas salían cinco, y el resto era sopa.
+ *
+ * `npm run test:ocr:web` incluye esa etiqueta con ruido justo para que esto no
+ * vuelva a colarse. Si alguna vez se añade preparación, que sea porque esa
+ * comprobación mejora, no porque suene razonable.
+ */
 
 export const webLabelOcrProvider: LabelOcrProvider = {
   id: 'web-tesseract',

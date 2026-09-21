@@ -182,20 +182,60 @@ Una etiqueta no dice "leche de vaca": dice `caseinato`, `lactosuero`,
 canónicas del catálogo, y `ALIAS_EXCLUSIONS` evita los falsos positivos que
 enseñan a ignorar los avisos —«leche de almendras» no es leche de vaca—.
 
+## Nada de preprocesado
+
+La foto va al motor **tal cual**. Hubo aquí un paso de preparación —reducir a
+1600 px, pasar a gris y estirar el contraste entre los percentiles 2 y 98— que
+sonaba sensato y medía fatal.
+
+Sobre una etiqueta con ruido, el recorte del 2 % caía en gris 123, muy por
+encima del texto: el estirado multiplicaba por 2,6 el ruido del fondo y lo
+convertía en manchas que el motor leía como letras. De doce palabras esperadas
+sobrevivían cinco y el resto era sopa —exactamente la sopa que aparecía en
+pantalla—.
+
+Medido, no supuesto, sobre la misma imagen degradada:
+
+| Pasada | Palabras reconocidas |
+| --- | --- |
+| foto cruda, PSM 3 | 12 / 12 |
+| foto cruda, PSM 6 | 12 / 12 |
+| solo gris, PSM 6 | 12 / 12 |
+| gris + contraste estirado, PSM 6 | 5 / 12 |
+| gris + contraste estirado, PSM 3 | 0 / 12 |
+
+Ninguna pieza del preprocesado mejoraba nada y una lo rompía todo, así que no
+queda ninguna. Si algún día se vuelve a añadir, que sea porque la comprobación
+de la etiqueta C mejora, no porque suene razonable.
+
+Lo que sí se fija es `tessedit_pageseg_mode: 6` (un bloque de texto uniforme) y
+`user_defined_dpi: 300`. En esta medición son neutros; tienen sentido porque la
+pantalla pide encuadrar **solo la lista de ingredientes**, y ahí sí hay un solo
+bloque. El encuadre es la palanca de verdad: sobre la foto de un envase entero,
+con su logotipo y su tabla nutricional, cualquier motor devuelve sopa.
+
 ## Comprobación de OCR real
 
 ```bash
 npm run test:ocr:web
 ```
 
-Arranca Chromium, dibuja **dos etiquetas distintas** en un canvas (el mismo
-canvas → dataURL que usa la cámara), se las pasa al proveedor web real y
-comprueba que A devuelve el texto de A, que B devuelve un texto **distinto**,
-que los ingredientes salen troceados y que la comparación encuentra la leche en
-A y nada en B.
+Arranca Chromium, dibuja **tres etiquetas** en un canvas (el mismo canvas →
+dataURL que usa la cámara), se las pasa al proveedor web real y comprueba que A
+devuelve el texto de A, que B devuelve un texto **distinto**, que los
+ingredientes salen troceados y que la comparación encuentra la leche en A y
+nada en B.
 
 Que los textos sean distintos importa: un motor mal conectado que devolviera
 siempre lo mismo pasaría cualquier prueba que solo mirase una imagen.
+
+La etiqueta **C** está mal fotografiada a propósito: degradado de fondo, texto
+de bajo contraste, ruido por píxel, grado y medio de inclinación y JPEG de
+calidad mala. Se le exigen 10 de 12 palabras y que la leche siga coincidiendo.
+
+Existe porque una comprobación que solo mira imágenes fáciles da luz verde a un
+escáner roto: el preprocesado que destrozaba las fotos reales dejaba A y B
+intactas y pasaba este mismo script sin una queja.
 
 Usa **los mismos assets que se publican** (`public/ocr`), no una copia hecha
 para la ocasión: si lo desplegado estuviera roto o desfasado, esta comprobación

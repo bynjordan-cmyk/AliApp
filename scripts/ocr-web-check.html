@@ -53,10 +53,70 @@
         'azucar, sal, lecitina de soja.',
       ];
 
+      /**
+       * Etiqueta C: la misma lista, pero fotografiada mal.
+       *
+       * Fondo con degradado, texto de bajo contraste, ruido por píxel, un
+       * grado y medio de inclinación y JPEG de calidad mala. Se parece a una
+       * foto de envase hecha de noche, que es cuando se usa esto.
+       *
+       * Existe por una razón concreta: hubo un preprocesado de imagen que
+       * dejaba las etiquetas limpias intactas —A y B seguían pasando— y
+       * destrozaba justo este caso. Una comprobación que solo mira imágenes
+       * fáciles da luz verde a un escáner roto.
+       */
+      function pintarEtiquetaDificil(lineas) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 900;
+        canvas.height = 60 + lineas.length * 62;
+
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const degradado = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        degradado.addColorStop(0, '#d8d4c8');
+        degradado.addColorStop(1, '#b4b0a4');
+        ctx.fillStyle = degradado;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((-1.6 * Math.PI) / 180);
+        ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        ctx.fillStyle = '#4a4a46';
+        ctx.font = '30px "DejaVu Sans", sans-serif';
+        lineas.forEach((linea, indice) => ctx.fillText(linea, 70, 70 + indice * 62));
+        ctx.restore();
+
+        const datos = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixeles = datos.data;
+        for (let i = 0; i < pixeles.length; i += 4) {
+          const ruido = (Math.random() - 0.5) * 46;
+          pixeles[i] += ruido;
+          pixeles[i + 1] += ruido;
+          pixeles[i + 2] += ruido;
+        }
+        ctx.putImageData(datos, 0, 0);
+
+        document.getElementById('lienzos').appendChild(canvas);
+        return canvas.toDataURL('image/jpeg', 0.5);
+      }
+
       const ETIQUETA_B = [
         'INGREDIENTES: agua, arroz,',
         'zanahoria, aceite de oliva,',
         'patata, sal.',
+      ];
+
+      const ETIQUETA_C = [
+        'INGREDIENTES: harina de trigo,',
+        'azucar, aceite de girasol,',
+        'leche en polvo, huevo, sal,',
+        'cacao, lecitina de soja.',
+      ];
+
+      /** Palabras que tienen que sobrevivir a una foto mala. */
+      const ESPERADAS_C = [
+        'ingredientes', 'harina', 'trigo', 'azucar', 'aceite', 'girasol',
+        'leche', 'polvo', 'huevo', 'sal', 'cacao', 'soja',
       ];
 
       const CATALOGO = [
@@ -75,6 +135,7 @@
       try {
         const uriA = pintarEtiqueta(ETIQUETA_A);
         const uriB = pintarEtiqueta(ETIQUETA_B);
+        const uriC = pintarEtiquetaDificil(ETIQUETA_C);
 
         document.getElementById('estado').textContent = 'leyendo A';
         const progresosA = [];
@@ -84,6 +145,9 @@
 
         document.getElementById('estado').textContent = 'leyendo B';
         const lecturaB = await webLabelOcrProvider.recognize({ uri: uriB });
+
+        document.getElementById('estado').textContent = 'leyendo C';
+        const lecturaC = await webLabelOcrProvider.recognize({ uri: uriC });
 
         const ingredientesA = parseIngredientList(lecturaA.rawText);
         const ingredientesB = parseIngredientList(lecturaB.rawText);
@@ -118,6 +182,21 @@
           ingredientes: ingredientesB,
           avoid: resultadoB.avoid.map((h) => `${h.matchedTerm}→${h.canonicalKey}`),
           otras: resultadoB.other.map((h) => h.canonicalKey),
+        };
+        const planoC = lecturaC.rawText
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase();
+
+        salida.c = {
+          rawText: lecturaC.rawText,
+          encontradas: ESPERADAS_C.filter((palabra) => planoC.includes(palabra)),
+          esperadas: ESPERADAS_C.length,
+          avoid: buildLabelScanResult({
+            rawText: lecturaC.rawText,
+            catalog: CATALOGO,
+            statusByKey: ESTADOS,
+          }).avoid.map((h) => `${h.matchedTerm}→${h.canonicalKey}`),
         };
       } catch (error) {
         salida.ok = false;

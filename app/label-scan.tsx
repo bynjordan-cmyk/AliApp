@@ -208,6 +208,12 @@ export default function LabelScanScreen() {
         ) : null}
 
         {paso === 'capturar' ? (
+          <Text variant="caption" color={colors.textSecondary}>
+            {t('label.framingTip')}
+          </Text>
+        ) : null}
+
+        {paso === 'capturar' ? (
           <LabelCapture
             onCaptured={(capturada) => {
               setImagen(capturada);

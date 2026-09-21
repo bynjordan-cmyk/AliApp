@@ -211,7 +211,7 @@ async function main() {
   pagina.on('pageerror', (error) => fallos.push(String(error)));
 
   try {
-    log('→ leyendo dos etiquetas en Chromium (la primera vez tarda)');
+    log('→ leyendo tres etiquetas en Chromium (la primera vez tarda)');
     await pagina.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'domcontentloaded' });
     await pagina.waitForFunction(() => window.__RESULTADO__ !== undefined, null, {
       timeout: 240000,
@@ -223,6 +223,7 @@ async function main() {
 
     log('\nTexto leído de la etiqueta A:\n' + r.a.rawText);
     log('\nTexto leído de la etiqueta B:\n' + r.b.rawText);
+    log('\nTexto leído de la etiqueta C (foto mala):\n' + r.c.rawText);
     log('');
 
     comprobar(r.a.engine === 'tesseract.js@7', 'el motor es tesseract.js, no un doble');
@@ -240,6 +241,19 @@ async function main() {
     );
     comprobar(r.b.avoid.length === 0, 'en B no hay ninguna coincidencia con Evitar');
     comprobar(r.a.progresos > 0, 'el progreso se informa durante la lectura');
+
+    // La etiqueta C es el caso que de verdad importa: una foto mala. Diez de
+    // doce deja margen para que el motor se coma un acento o parta una
+    // palabra, y no lo deja para que devuelva sopa.
+    comprobar(
+      r.c.encontradas.length >= 10,
+      `C, mal fotografiada, conserva el texto (${r.c.encontradas.length}/${r.c.esperadas}: ` +
+        `${r.c.encontradas.join(', ')})`,
+    );
+    comprobar(
+      r.c.avoid.some((linea) => linea.endsWith('cow_milk')),
+      'en C la leche sigue coincidiendo con un alimento marcado como Evitar',
+    );
     comprobar(fallos.length === 0, `sin errores de página (${fallos.join(' | ')})`);
 
     log('\n✓ OCR real verificado en navegador');
