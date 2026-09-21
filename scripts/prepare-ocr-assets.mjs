@@ -13,25 +13,22 @@
  *   · `worker.min.js` de tesseract.js,
  *   · los tres núcleos WASM con LSTM (con y sin SIMD), porque el worker elige
  *     uno u otro según lo que admita el navegador y los tres tienen que estar,
- *   · los datos de idioma de español e inglés, comprimidos.
+ *   · los datos de idioma de español e inglés, SIN comprimir.
+ *
+ * Sin comprimir a propósito: un `.traineddata.gz` servido por un CDN que le
+ * ponga `Content-Encoding: gzip` lo descomprime el navegador por su cuenta, y
+ * entonces tesseract.js recibe bytes crudos donde esperaba un gzip y falla. Con
+ * el fichero plano no hay ambigüedad, y el CDN lo comprime igual al enviarlo.
  *
  * Los datos de idioma salen del sistema si están instalados
  * (`tesseract-ocr-spa`, `tesseract-ocr-eng`) y si no se descargan una vez.
  *
  * Uso:  npm run ocr:assets
  */
-import {
-  createReadStream,
-  createWriteStream,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { cp } from 'node:fs/promises';
 import { Buffer } from 'node:buffer';
-import { createGzip } from 'node:zlib';
-import { pipeline } from 'node:stream/promises';
+import { gunzipSync } from 'node:zlib';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -82,14 +79,14 @@ async function copiarIdiomas() {
   mkdirSync(destino, { recursive: true });
 
   for (const idioma of IDIOMAS) {
-    const salida = path.join(destino, `${idioma}.traineddata.gz`);
+    const salida = path.join(destino, `${idioma}.traineddata`);
 
     const local = TESSDATA_LOCAL.map((dir) => path.join(dir, `${idioma}.traineddata`)).find(
       (ruta) => existsSync(ruta),
     );
 
     if (local) {
-      await pipeline(createReadStream(local), createGzip(), createWriteStream(salida));
+      await cp(local, salida);
       log(`  · ${idioma}: del sistema`);
       continue;
     }
@@ -102,7 +99,9 @@ async function copiarIdiomas() {
           `o deja accesible ${url}.`,
       );
     }
-    writeFileSync(salida, Buffer.from(await respuesta.arrayBuffer()));
+    // Lo que se publica va sin comprimir, venga de donde venga.
+    const comprimido = Buffer.from(await respuesta.arrayBuffer());
+    writeFileSync(salida, gunzipSync(comprimido));
     log(`  · ${idioma}: descargado`);
   }
 }
@@ -121,7 +120,7 @@ function escribirManifiesto() {
 
   writeFileSync(
     path.join(DESTINO, 'manifest.json'),
-    `${JSON.stringify({ tesseractVersion: version, cores: NUCLEOS, langs: IDIOMAS }, null, 2)}\n`,
+    `${JSON.stringify({ tesseractVersion: version, cores: NUCLEOS, langs: IDIOMAS, gzippedLangs: false }, null, 2)}\n`,
   );
 
   log(`  · manifiesto: tesseract.js ${version}`);

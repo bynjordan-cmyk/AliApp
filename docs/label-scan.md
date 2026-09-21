@@ -84,16 +84,22 @@ npm run ocr:assets
 ```
 public/ocr/worker.min.js            de node_modules/tesseract.js
 public/ocr/core/*-lstm.wasm.js      los tres núcleos LSTM (con y sin SIMD)
-public/ocr/lang/spa.traineddata.gz  datos de idioma
-public/ocr/lang/eng.traineddata.gz
+public/ocr/lang/spa.traineddata     datos de idioma, SIN comprimir
+public/ocr/lang/eng.traineddata
 public/ocr/manifest.json            para qué versión de tesseract.js se copió
 ```
 
-Son unos 15 MB en disco. Se sirven comprimidos y el navegador los cachea, así
-que el coste es de la primera lectura y solo de esa.
+Son unos 18 MB en disco. El CDN los comprime al enviarlos y el navegador los
+cachea, así que el coste es de la primera lectura y solo de esa.
 
 Los **tres** núcleos son necesarios: el worker elige uno según lo que admita el
 navegador (relaxed SIMD → SIMD → sin SIMD) y si el que elige no está, falla.
+
+Los datos de idioma van **sin comprimir**, y el proveedor pasa `gzip: false`.
+Con `.traineddata.gz` había una trampa fina: un servidor que responda con
+`Content-Encoding: gzip` hace que el navegador lo descomprima por su cuenta, y
+entonces tesseract.js recibe bytes crudos donde espera un gzip y falla sin
+decir por qué. Con el fichero plano no hay ambigüedad posible.
 
 El `manifest.json` existe para un fallo muy concreto: actualizar tesseract.js y
 olvidar volver a copiar el motor. `npm run test:ocr:web` compara la versión del

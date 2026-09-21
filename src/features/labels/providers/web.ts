@@ -66,6 +66,11 @@ async function getWorker(onProgress?: LabelOcrProgress): Promise<Worker> {
   if (!workerPromise) {
     workerPromise = createWorker(LANGS, 1, {
       ...assetPaths(),
+      // Los datos de idioma se publican sin comprimir: ver
+      // `scripts/prepare-ocr-assets.mjs`. Con `.gz`, un CDN que añada
+      // `Content-Encoding: gzip` haría que el navegador los descomprimiera y
+      // tesseract recibiría bytes crudos donde espera un gzip.
+      gzip: ASSET_BASE !== null ? false : undefined,
       logger: (mensaje: { status: string; progress: number }) => {
         // La descarga del motor es la mitad de la espera de la primera vez.
         if (mensaje.status === 'recognizing text') return;

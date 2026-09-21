@@ -8,5 +8,6 @@
   "langs": [
     "spa",
     "eng"
-  ]
+  ],
+  "gzippedLangs": false
 }
