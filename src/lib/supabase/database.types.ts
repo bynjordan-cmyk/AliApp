@@ -146,6 +146,10 @@ export type Database = {
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
+          stool_amount: Database['public']['Enums']['stool_amount'] | null;
+          visible_food_residue: boolean | null;
+          straining: boolean | null;
+          unusual_odor: boolean | null;
         };
         Insert: {
           id?: string;
@@ -162,6 +166,10 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          stool_amount?: Database['public']['Enums']['stool_amount'] | null;
+          visible_food_residue?: boolean | null;
+          straining?: boolean | null;
+          unusual_odor?: boolean | null;
         };
         Update: {
           id?: string;
@@ -178,6 +186,10 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          stool_amount?: Database['public']['Enums']['stool_amount'] | null;
+          visible_food_residue?: boolean | null;
+          straining?: boolean | null;
+          unusual_odor?: boolean | null;
         };
         Relationships: [];
       };
@@ -613,6 +625,69 @@ export type Database = {
         };
         Relationships: [];
       };
+      notification_preferences: {
+        Row: {
+          profile_id: string;
+          household_id: string;
+          category: Database['public']['Enums']['reminder_category'];
+          enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          profile_id: string;
+          household_id: string;
+          category: Database['public']['Enums']['reminder_category'];
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          profile_id?: string;
+          household_id?: string;
+          category?: Database['public']['Enums']['reminder_category'];
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      notification_settings: {
+        Row: {
+          profile_id: string;
+          household_id: string;
+          push_enabled: boolean;
+          quiet_hours_start: unknown | null;
+          quiet_hours_end: unknown | null;
+          device_timezone: string | null;
+          push_token: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          profile_id: string;
+          household_id: string;
+          push_enabled?: boolean;
+          quiet_hours_start?: unknown | null;
+          quiet_hours_end?: unknown | null;
+          device_timezone?: string | null;
+          push_token?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          profile_id?: string;
+          household_id?: string;
+          push_enabled?: boolean;
+          quiet_hours_start?: unknown | null;
+          quiet_hours_end?: unknown | null;
+          device_timezone?: string | null;
+          push_token?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string;
@@ -678,6 +753,66 @@ export type Database = {
           ended_at?: string | null;
           status?: Database['public']['Enums']['episode_status'];
           notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Relationships: [];
+      };
+      reminders: {
+        Row: {
+          id: string;
+          household_id: string;
+          baby_id: string | null;
+          profile_id: string;
+          category: Database['public']['Enums']['reminder_category'];
+          title: string;
+          notes: string | null;
+          scheduled_for: string;
+          repeat_minutes: number | null;
+          status: Database['public']['Enums']['reminder_status'];
+          related_entity_type: string | null;
+          related_entity_id: string | null;
+          local_notification_id: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          household_id: string;
+          baby_id?: string | null;
+          profile_id: string;
+          category: Database['public']['Enums']['reminder_category'];
+          title: string;
+          notes?: string | null;
+          scheduled_for: string;
+          repeat_minutes?: number | null;
+          status?: Database['public']['Enums']['reminder_status'];
+          related_entity_type?: string | null;
+          related_entity_id?: string | null;
+          local_notification_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          household_id?: string;
+          baby_id?: string | null;
+          profile_id?: string;
+          category?: Database['public']['Enums']['reminder_category'];
+          title?: string;
+          notes?: string | null;
+          scheduled_for?: string;
+          repeat_minutes?: number | null;
+          status?: Database['public']['Enums']['reminder_status'];
+          related_entity_type?: string | null;
+          related_entity_id?: string | null;
+          local_notification_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -798,6 +933,9 @@ export type Database = {
       media_type: 'photo' | 'document';
       member_role: 'owner' | 'parent' | 'caregiver' | 'professional_viewer';
       member_status: 'invited' | 'active' | 'revoked';
+      reminder_category: 'feeding' | 'breastfeeding' | 'symptom_followup' | 'open_episode' | 'medication' | 'journey_review' | 'reintroduction' | 'daily_summary' | 'household_updates';
+      reminder_status: 'scheduled' | 'done' | 'snoozed' | 'cancelled';
+      stool_amount: 'scant' | 'moderate' | 'large';
     };
     CompositeTypes: Record<string, never>;
   };
