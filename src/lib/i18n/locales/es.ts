@@ -109,6 +109,17 @@ export const es = {
   'food.items': 'Alimentos',
   'food.amount': 'Cantidad',
 
+  'food.boardEmpty': 'Nada en este estado todavía',
+  'food.boardEmptyHint': 'Los alimentos aparecen aquí a medida que los registras o marcas su estado.',
+  'food.neverIntroduced': 'Todavía no lo has introducido',
+  'food.statusSetBy': 'Estado fijado por',
+  'food.babyEmpty': 'Sin comidas registradas del bebé',
+  'food.babyEmptyHint': 'Registra una comida para empezar su historial de exposiciones.',
+  'food.caregiverEmpty': 'Sin comidas registradas de mamá o cuidador',
+  'food.caregiverEmptyHint': 'Útil si hay lactancia: queda anotado lo que comió quien amamanta.',
+  'food.breastfeedingEmpty': 'Sin tomas registradas',
+  'food.breastfeedingEmptyHint': 'Cada toma queda con su hora, su lado y su duración.',
+
   'foodStatus.unknown': 'Sin introducir',
   'foodStatus.introducing': 'Introduciendo',
   'foodStatus.observing': 'En observación',

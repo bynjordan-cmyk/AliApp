@@ -4,25 +4,20 @@ import { View } from 'react-native';
 import {
   QueryState,
   PageHeader,
-  Card,
   Chip,
   EmptyState,
   ListItem,
   Screen,
   SectionHeader,
-  Text,
-  colors,
   eventColors,
   spacing,
 } from '@/design-system';
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
 import { BabySelector } from '@/features/baby/BabySelector';
-import { useAllergenBoard } from '@/features/food/useFoods';
-import { useFoodNames } from '@/features/food/useFoodNames';
+import { AllergenBoard } from '@/features/food/AllergenBoard';
 import { useBreastfeeds, useFoodEntries } from '@/features/feeding/useFeeding';
 import { formatDate, formatTime } from '@/lib/dates';
 import { useI18n } from '@/lib/i18n';
-import type { FoodStatus } from '@/types/domain';
 
 type FoodTab = 'baby' | 'caregiver' | 'breastfeeding' | 'board';
 
@@ -34,11 +29,9 @@ export default function FoodScreen() {
 
   const foodEntries = useFoodEntries(baby?.id ?? null);
   const breastfeeds = useBreastfeeds(baby?.id ?? null);
-  const board = useAllergenBoard(baby?.id ?? null);
-  const foodNames = useFoodNames();
 
   const visibleQuery =
-    tab === 'board' ? board : tab === 'breastfeeding' ? breastfeeds : foodEntries;
+    tab === 'breastfeeding' ? breastfeeds : foodEntries;
 
   if (!baby) {
     return (
@@ -101,7 +94,10 @@ export default function FoodScreen() {
             {(foodEntries.data ?? []).filter((entry) =>
               tab === 'baby' ? entry.subject_type === 'baby' : entry.subject_type === 'caregiver',
             ).length === 0 ? (
-              <EmptyState title={t('common.empty')} />
+              <EmptyState
+                title={tab === 'baby' ? t('food.babyEmpty') : t('food.caregiverEmpty')}
+                description={tab === 'baby' ? t('food.babyEmptyHint') : t('food.caregiverEmptyHint')}
+              />
             ) : null}
           </View>
         ) : null}
@@ -119,61 +115,16 @@ export default function FoodScreen() {
               />
             ))}
             {(breastfeeds.data ?? []).length === 0 ? (
-              <EmptyState title={t('common.empty')} />
+              <EmptyState
+                title={t('food.breastfeedingEmpty')}
+                description={t('food.breastfeedingEmptyHint')}
+              />
             ) : null}
           </View>
         ) : null}
 
-        {tab === 'board' ? (
-          <View style={{ gap: spacing.md }}>
-            <SectionHeader title={t('food.allergenBoard')} subtitle={t('safety.limitedData')} />
-            {board.groups
-              .filter((group) => group.items.length > 0)
-              .map((group) => (
-                <Card key={group.status}>
-                  <Text variant="subtitle">{t(`foodStatus.${group.status}` as const)}</Text>
-                  {group.items.map((item) => (
-                    <ListItem
-                      key={`${group.status}-${item.food_id}`}
-                      title={
-                        foodNames.byId.get(item.food_id ?? '') ??
-                        item.canonical_name ??
-                        item.canonical_key ??
-                        ''
-                      }
-                      subtitle={`${t('foodStatus.exposures')}: ${item.exposure_count ?? 0}`}
-                      meta={
-                        item.last_exposure_at
-                          ? formatDate(item.last_exposure_at, locale)
-                          : undefined
-                      }
-                      tint={statusTint(group.status)}
-                    />
-                  ))}
-                </Card>
-              ))}
-            <Text variant="caption" color={colors.textSecondary}>
-              {t('safety.consultProfessional')}
-            </Text>
-          </View>
-        ) : null}
+        {tab === 'board' ? <AllergenBoard babyId={baby.id} /> : null}
       </QueryState>
     </Screen>
   );
-}
-
-/** Color por estado. Siempre acompañado del nombre del estado en texto (§21). */
-function statusTint(status: FoodStatus): string {
-  switch (status) {
-    case 'tolerated':
-      return eventColors.diaper;
-    case 'avoid':
-    case 'professional_supervision':
-      return eventColors.food;
-    case 'observing':
-    case 'introducing':
-      return eventColors.symptom;
-    default:
-      return colors.border;
-  }
 }

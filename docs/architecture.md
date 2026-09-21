@@ -105,7 +105,10 @@ pantalla → hook (TanStack Query) → servicio → cliente Supabase → Postgre
    El resto de la paleta aprobada se mantiene intacta. El texto de los botones
    primarios pasó a navy sobre coral (4.89:1) en lugar de blanco (2.78:1), sin
    cambiar ningún color de marca.
-9. **Los ficheros de marca son la fuente del logotipo.** `assets/logo-aliapp.png`
+9. **`expo-notifications` y `expo-device`** se añaden para los recordatorios
+   locales. No hay servidor de push: la V1 programa avisos en el dispositivo,
+   que es lo que hace falta para lo que el producto promete.
+10. **Los ficheros de marca son la fuente del logotipo.** `assets/logo-aliapp.png`
    (color), `assets/logo-aliapp-azul.png` (monocromo navy) e
    `assets/isotipo-aliapp.png` se generan desde los originales entregados por el
    equipo; el icono de aplicación sale de `Icono_App_AliApp`. No se redibuja el
