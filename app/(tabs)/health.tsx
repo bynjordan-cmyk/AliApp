@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import {
+  QueryState,
+  PageHeader,
   Chip,
   EmptyState,
   ListItem,
@@ -51,7 +53,7 @@ export default function HealthScreen() {
 
   return (
     <Screen>
-      <Text variant="display">{t('health.title')}</Text>
+      <PageHeader title={t('health.title')} icon="heart-outline" />
       <BabySelector />
 
       <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
@@ -82,33 +84,37 @@ export default function HealthScreen() {
         />
       </View>
 
-      {tab === 'symptoms' ? (
-        <View style={{ gap: spacing.sm }}>
-          <SectionHeader title={t('health.symptoms')} subtitle={t('safety.notDiagnostic')} />
-          {(symptoms.data ?? []).map((symptom) => (
-            <ListItem
-              key={symptom.id}
-              title={translateSymptom(symptom.symptom_type)}
-              subtitle={
-                symptom.severity
-                  ? t(`health.severity${symptom.severity}` as 'health.severity1')
-                  : undefined
-              }
-              meta={`${formatDate(symptom.started_at, locale)} · ${formatTime(symptom.started_at, locale)}`}
-              tint={eventColors.symptom}
-            />
-          ))}
-          {(symptoms.data ?? []).length === 0 ? <EmptyState title={t('common.empty')} /> : null}
-        </View>
-      ) : null}
+      <QueryState
+        loading={tab === 'symptoms' && symptoms.isLoading}
+        error={tab === 'symptoms' && symptoms.isError}
+        onRetry={() => {
+          void symptoms.refetch();
+        }}
+      >
+        {tab === 'symptoms' ? (
+          <View style={{ gap: spacing.sm }}>
+            <SectionHeader title={t('health.symptoms')} subtitle={t('safety.notDiagnostic')} />
+            {(symptoms.data ?? []).map((symptom) => (
+              <ListItem
+                key={symptom.id}
+                title={translateSymptom(symptom.symptom_type)}
+                subtitle={
+                  symptom.severity
+                    ? t(`health.severity${symptom.severity}` as 'health.severity1')
+                    : undefined
+                }
+                meta={`${formatDate(symptom.started_at, locale)} · ${formatTime(symptom.started_at, locale)}`}
+                tint={eventColors.symptom}
+              />
+            ))}
+            {(symptoms.data ?? []).length === 0 ? <EmptyState title={t('common.empty')} /> : null}
+          </View>
+        ) : null}
 
-      {tab !== 'symptoms' ? (
-        <EmptyState
-          title={t('common.empty')}
-          description={t('safety.consultProfessional')}
-        />
-      ) : null}
-
+        {tab !== 'symptoms' ? (
+          <EmptyState title={t('common.empty')} description={t('safety.consultProfessional')} />
+        ) : null}
+      </QueryState>
       <Text variant="caption" color={colors.textSecondary}>
         {t('safety.notDiagnostic')}
       </Text>

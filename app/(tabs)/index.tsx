@@ -3,6 +3,8 @@ import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
+  QueryState,
+  PageHeader,
   Card,
   EmptyState,
   Screen,
@@ -87,18 +89,22 @@ export default function TodayScreen() {
   const timelineBlock = (
     <View style={styles.stack}>
       <SectionHeader title={t('today.timeline')} />
-      {timeline.isLoading ? (
-        <Text>{t('common.loading')}</Text>
-      ) : (
+      <QueryState
+        loading={timeline.isLoading}
+        error={timeline.isError}
+        onRetry={() => {
+          void timeline.refetch();
+        }}
+      >
         <TimelineList days={timeline.days} />
-      )}
+      </QueryState>
     </View>
   );
 
   return (
     <View style={styles.root}>
-      <Screen maxWidth={isDesktop ? WIDE_LAYOUT_WIDTH : undefined}>
-        <Text variant="display">{t('today.title')}</Text>
+      <Screen maxWidth={isDesktop ? WIDE_LAYOUT_WIDTH : undefined} bottomSpace={spacing.xxxl * 2}>
+        <PageHeader title={t('today.title')} icon="sunny-outline" />
         <BabySelector />
 
         {isDesktop ? (

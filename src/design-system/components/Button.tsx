@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, type ViewStyle } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
 import { colors, radius, spacing, touchTarget } from '../tokens';
 import { Text } from './Text';
@@ -8,6 +9,7 @@ export type ButtonProps = {
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'ghost';
   disabled?: boolean;
+  loading?: boolean;
   accessibilityHint?: string;
   style?: ViewStyle;
   testID?: string;
@@ -18,10 +20,12 @@ export function Button({
   onPress,
   variant = 'primary',
   disabled = false,
+  loading = false,
   accessibilityHint,
   style,
   testID,
 }: ButtonProps) {
+  const [focused, setFocused] = useState(false);
   const isPrimary = variant === 'primary';
   const isGhost = variant === 'ghost';
 
@@ -31,8 +35,10 @@ export function Button({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
+      disabled={disabled || loading}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
@@ -41,12 +47,15 @@ export function Button({
         isGhost && styles.ghost,
         pressed && styles.pressed,
         disabled && styles.disabled,
+        focused && styles.focused,
         style,
       ]}
     >
+      {loading ? <ActivityIndicator color={colors.brand} /> : null}
       <Text
         variant="bodyStrong"
-        color={isPrimary ? colors.textOnAccent : colors.brand}
+        style={{ flexShrink: 1 }}
+        color={isPrimary ? colors.textOnCoral : colors.brand}
         center
       >
         {label}
@@ -60,6 +69,11 @@ const styles = StyleSheet.create({
     minHeight: touchTarget.comfortable,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    borderWidth: 2,
+    borderColor: colors.transparent,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -69,7 +83,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  ghost: { backgroundColor: 'transparent' },
+  ghost: { backgroundColor: colors.transparent },
+  focused: { borderColor: colors.brand },
   pressed: { opacity: 0.85 },
   disabled: { opacity: 0.45 },
 });

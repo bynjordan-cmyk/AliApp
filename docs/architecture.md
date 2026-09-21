@@ -96,3 +96,19 @@ pantalla → hook (TanStack Query) → servicio → cliente Supabase → Postgre
 7. **Tablas de V2.5 (leche extraída, notificaciones, informes guardados) no
    creadas.** La arquitectura las admite sin cambios: `exposure_source_type` ya
    incluye `pumped_milk` y los informes pasan por `build_report`.
+8. **Dos tokens se apartan de la paleta aprobada, por accesibilidad** (§21). Los
+   contrastes son los medidos sobre blanco:
+   - `muted`: #6B7B91 → **#58677D**. El aprobado daba 4.31:1 y no alcanzaba el
+     mínimo AA de 4.5:1 para texto pequeño; el nuevo da 5.75:1.
+   - `error`: color añadido **#A62F42**. Los mensajes de error usaban el coral
+     de marca, que sobre blanco da 2.78:1; el nuevo da 6.76:1.
+   El resto de la paleta aprobada se mantiene intacta. El texto de los botones
+   primarios pasó a navy sobre coral (4.89:1) en lugar de blanco (2.78:1), sin
+   cambiar ningún color de marca.
+9. **Los ficheros de marca son la fuente del logotipo.** `assets/logo-aliapp.png`
+   (color), `assets/logo-aliapp-azul.png` (monocromo navy) e
+   `assets/isotipo-aliapp.png` se generan desde los originales entregados por el
+   equipo; el icono de aplicación sale de `Icono_App_AliApp`. No se redibuja el
+   logotipo con iconos ni tipografía del sistema: `BrandLogo` los sirve.
+   El coral del logotipo (#FC4B4D) es más saturado que el coral de interfaz
+   aprobado (#FF6B6B): son piezas distintas y conviven a propósito.

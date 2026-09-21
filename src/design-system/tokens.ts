@@ -18,7 +18,10 @@ export const palette = {
   // Supporting
   background: '#F7FAFF',
   ink: '#18314E',
-  muted: '#6B7B91',
+  // Desviación documentada: el valor aprobado (#6B7B91) se queda en 4.31:1
+  // sobre blanco y no alcanza el mínimo AA de 4.5:1 para texto pequeño.
+  // Este tono conserva el mismo carácter y sube a 5.75:1 (ver docs/architecture.md).
+  muted: '#58677D',
   line: '#DDE7F0',
   softCoral: '#FFF0F0',
   softAqua: '#ECFBFF',
@@ -36,9 +39,14 @@ export const colors = {
   surface: palette.white,
   surfaceMuted: palette.background,
   screen: palette.white,
-  textPrimary: palette.ink,
+  textPrimary: palette.navy,
   textSecondary: palette.muted,
   textOnAccent: palette.white,
+  textOnCoral: palette.navy,
+  // Color añadido fuera de la paleta aprobada: el coral de marca sobre blanco
+  // da 2.78:1 y un mensaje de error no puede ser ilegible. Este rojo da 6.76:1.
+  error: '#A62F42',
+  transparent: 'transparent',
   border: palette.line,
   accent: palette.coral,
   accentSoft: palette.softCoral,
@@ -83,8 +91,8 @@ export const spacing = {
 export const radius = {
   sm: 8,
   md: 12,
-  lg: 18,
-  xl: 24,
+  lg: 24,
+  xl: 32,
   pill: 999,
 } as const;
 
@@ -95,10 +103,13 @@ export const touchTarget = {
 } as const;
 
 export const typography = {
-  display: { fontSize: 28, lineHeight: 34, fontWeight: '700' },
-  title: { fontSize: 22, lineHeight: 28, fontWeight: '700' },
+  // 12px es el mínimo cómodo en Android y web; iOS usa 10, pero aquí manda
+  // la pantalla más exigente (§21).
+  navigation: { fontSize: 12, lineHeight: 16, fontWeight: '600' },
+  display: { fontSize: 32, lineHeight: 40, fontWeight: '700' },
+  title: { fontSize: 24, lineHeight: 32, fontWeight: '700' },
   subtitle: { fontSize: 17, lineHeight: 24, fontWeight: '600' },
-  body: { fontSize: 16, lineHeight: 22, fontWeight: '400' },
+  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
   bodyStrong: { fontSize: 16, lineHeight: 22, fontWeight: '600' },
   caption: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
   overline: { fontSize: 12, lineHeight: 16, fontWeight: '700' },

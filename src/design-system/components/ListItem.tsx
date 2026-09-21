@@ -26,7 +26,7 @@ export function ListItem({ title, subtitle, meta, tint, onPress, testID }: ListI
         ) : null}
       </View>
       {meta ? (
-        <Text variant="caption" color={colors.textSecondary}>
+        <Text variant="caption" color={colors.textSecondary} style={styles.meta}>
           {meta}
         </Text>
       ) : null}
@@ -54,7 +54,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
   },
   rail: {
     width: 4,
@@ -63,5 +66,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   texts: { flex: 1, gap: spacing.xxs },
+  meta: { maxWidth: '35%', textAlign: 'right', flexShrink: 1 },
   pressed: { opacity: 0.7 },
 });

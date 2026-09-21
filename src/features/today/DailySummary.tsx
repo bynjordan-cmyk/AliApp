@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-import { Card, Text, colors, spacing } from '@/design-system';
+import { Card, Text, colors, eventPresentation, radius, spacing } from '@/design-system';
 import { useT } from '@/lib/i18n';
 import type { TimelineItem } from '@/types/timeline';
 
@@ -17,19 +18,24 @@ export function DailySummary({ items }: { items: TimelineItem[] }) {
     return accumulator;
   }, {});
 
-  const entries: { label: string; value: number }[] = [
-    { label: t('timeline.breastfeed'), value: counts.breastfeed ?? 0 },
-    { label: t('timeline.foodEntry'), value: counts.food_entry ?? 0 },
-    { label: t('timeline.diaper'), value: counts.diaper_event ?? 0 },
-    { label: t('timeline.symptom'), value: counts.symptom ?? 0 },
+  const entries = [
+    {
+      label: t('timeline.breastfeed'),
+      value: counts.breastfeed ?? 0,
+      ...eventPresentation.breastfeed,
+    },
+    { label: t('timeline.foodEntry'), value: counts.food_entry ?? 0, ...eventPresentation.food },
+    { label: t('timeline.diaper'), value: counts.diaper_event ?? 0, ...eventPresentation.diaper },
+    { label: t('timeline.symptom'), value: counts.symptom ?? 0, ...eventPresentation.symptom },
   ];
 
   return (
-    <Card tone="info">
+    <Card>
       <Text variant="subtitle">{t('today.summary')}</Text>
       <View style={styles.row}>
         {entries.map((entry) => (
-          <View key={entry.label} style={styles.cell}>
+          <View key={entry.label} style={[styles.cell, { backgroundColor: entry.background }]}>
+            <Ionicons name={entry.icon} size={22} color={colors.brand} accessible={false} />
             <Text variant="title">{entry.value}</Text>
             <Text variant="caption" color={colors.textSecondary}>
               {entry.label}
@@ -42,6 +48,12 @@ export function DailySummary({ items }: { items: TimelineItem[] }) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: spacing.lg, flexWrap: 'wrap' },
-  cell: { minWidth: 72, gap: spacing.xxs },
+  row: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
+  cell: {
+    flexBasis: '45%',
+    flexGrow: 1,
+    gap: spacing.sm,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+  },
 });

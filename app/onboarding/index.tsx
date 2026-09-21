@@ -3,10 +3,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { z } from 'zod';
 
-import { Button, Card, Screen, Text, colors, radius, spacing, touchTarget } from '@/design-system';
+import { Input, PageHeader, Button, Card, Screen, Text, colors, spacing } from '@/design-system';
 import { useSession } from '@/features/auth/SessionProvider';
 import { createBaby, createHousehold } from '@/features/baby/baby.service';
 import { useT } from '@/lib/i18n';
@@ -69,37 +69,33 @@ export default function OnboardingScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text variant="display">{t('onboarding.title')}</Text>
+        <PageHeader title={t('onboarding.title')} icon="people-outline" />
         <Text color={colors.textSecondary}>{t('safety.notDiagnostic')}</Text>
       </View>
 
       <Card>
-        <Text variant="caption" color={colors.textSecondary}>
-          {t('onboarding.householdName')}
-        </Text>
         <Controller
           control={control}
           name="householdName"
-          render={({ field }) => (
-            <TextInput
-              style={styles.input}
-              accessibilityLabel={t('onboarding.householdName')}
+          render={({ field, fieldState }) => (
+            <Input
+              error={fieldState.error ? t('common.invalidField') : undefined}
+              onBlur={field.onBlur}
+              label={t('onboarding.householdName')}
               value={field.value}
               onChangeText={field.onChange}
             />
           )}
         />
 
-        <Text variant="caption" color={colors.textSecondary}>
-          {t('onboarding.babyName')}
-        </Text>
         <Controller
           control={control}
           name="babyName"
-          render={({ field }) => (
-            <TextInput
-              style={styles.input}
-              accessibilityLabel={t('onboarding.babyName')}
+          render={({ field, fieldState }) => (
+            <Input
+              error={fieldState.error ? t('common.invalidField') : undefined}
+              onBlur={field.onBlur}
+              label={t('onboarding.babyName')}
               value={field.value}
               onChangeText={field.onChange}
             />
@@ -112,11 +108,12 @@ export default function OnboardingScreen() {
         <Controller
           control={control}
           name="birthDate"
-          render={({ field }) => (
-            <TextInput
-              style={styles.input}
+          render={({ field, fieldState }) => (
+            <Input
+              error={fieldState.error ? t('common.invalidField') : undefined}
+              onBlur={field.onBlur}
               placeholder="AAAA-MM-DD"
-              accessibilityLabel={t('onboarding.babyBirthDate')}
+              label={t('onboarding.babyBirthDate')}
               value={field.value}
               onChangeText={field.onChange}
             />
@@ -124,7 +121,7 @@ export default function OnboardingScreen() {
         />
 
         {error ? (
-          <Text variant="caption" color={colors.accent}>
+          <Text variant="caption" color={colors.error} accessibilityRole="alert">
             {error}
           </Text>
         ) : null}
@@ -132,7 +129,7 @@ export default function OnboardingScreen() {
         <Button
           label={t('onboarding.create')}
           onPress={onSubmit}
-          disabled={formState.isSubmitting}
+          loading={formState.isSubmitting}
         />
       </Card>
     </Screen>
@@ -141,14 +138,4 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   header: { gap: spacing.sm, marginTop: spacing.xl },
-  input: {
-    minHeight: touchTarget.comfortable,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-    fontSize: 16,
-    color: colors.textPrimary,
-    backgroundColor: colors.surface,
-  },
 });

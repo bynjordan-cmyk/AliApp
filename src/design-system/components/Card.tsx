@@ -20,10 +20,7 @@ const toneBackground: Record<NonNullable<CardProps['tone']>, string> = {
 
 export function Card({ children, tone = 'plain', style, testID }: CardProps) {
   return (
-    <View
-      testID={testID}
-      style={[styles.card, { backgroundColor: toneBackground[tone] }, style]}
-    >
+    <View testID={testID} style={[styles.card, { backgroundColor: toneBackground[tone] }, style]}>
       {children}
     </View>
   );
@@ -32,8 +29,8 @@ export function Card({ children, tone = 'plain', style, testID }: CardProps) {
 const styles = StyleSheet.create({
   card: {
     borderRadius: radius.lg,
-    padding: spacing.lg,
-    gap: spacing.sm,
+    padding: spacing.xl,
+    gap: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     ...elevation.card,
