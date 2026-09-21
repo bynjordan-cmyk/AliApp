@@ -80,9 +80,19 @@ La ausencia de coincidencias significa exactamente una cosa: ninguna palabra
 leída coincide con la lista de esa familia. No dice nada del producto, y el
 texto en pantalla lo dice con esas palabras (`label.noMatchesHint`).
 
-Mientras el OCR real no esté configurado funciona un lector de ejemplo, y la
-pantalla lo advierte (`label.mockNotice`): nadie debe confundir una
-demostración con la lectura de su propia foto.
+El OCR es real en las tres plataformas: tesseract.js sobre WebAssembly en el
+navegador y ML Kit en el teléfono, siempre en el dispositivo. El detalle vive
+en `label-scan.md`.
+
+Dos consecuencias para la seguridad del producto:
+
+- El texto detectado **se puede corregir antes de comparar**. Un motor de OCR
+  se equivoca, y quien tiene el envase en la mano es quien sabe lo que pone.
+  La interpretación nunca se guarda sola.
+- La pantalla dice de dónde salió el texto (`label.engineNotice`). Si alguna
+  vez apareciera el fixture de pruebas, lo diría con todas las letras
+  (`label.fixtureNotice`): nadie debe confundir una demostración con la
+  lectura de su propia foto.
 
 ## Correcciones
 

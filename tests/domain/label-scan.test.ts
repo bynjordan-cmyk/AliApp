@@ -9,7 +9,8 @@ import {
   describeDetected,
   hasMarkedMatches,
 } from '@/features/labels/label-scan';
-import { mockOcrProvider } from '@/features/labels/ocr';
+import { normalizeOcrPayload, hasUsableText } from '@/features/labels/ocr-normalize';
+import { LABEL_FIXTURE_TEXT, fixtureLabelOcrProvider } from '@/features/labels/providers/fixture';
 import { isSafeStatement } from '@/lib/safety';
 import { translate } from '@/lib/i18n';
 import type { FoodStatus } from '@/types/domain';
@@ -151,12 +152,15 @@ describe('lo que la lectura de etiquetas NUNCA dice', () => {
   const claves = [
     'label.intro',
     'label.limits',
+    'label.privacy',
     'label.detected',
+    'label.matchesIntro',
     'label.matchAvoid',
     'label.matchSupervision',
     'label.noMatches',
     'label.noMatchesHint',
     'label.verifyOriginal',
+    'label.ocrMayErr',
   ] as const;
 
   it.each(claves)('%s pasa los límites de seguridad en español', (clave) => {
@@ -176,27 +180,101 @@ describe('lo que la lectura de etiquetas NUNCA dice', () => {
     }
   });
 
-  it('siempre remite a la etiqueta original', () => {
+  it('siempre remite a la etiqueta original y admite que el OCR falla', () => {
     expect(translate('es', 'label.verifyOriginal')).toBe(
       'Verifica también la etiqueta original del producto.',
     );
+    expect(translate('es', 'label.ocrMayErr')).toBe(
+      'La lectura automática puede contener errores.',
+    );
+  });
+
+  it('las coincidencias se presentan como lo que son: texto detectado', () => {
+    expect(translate('es', 'label.matchesIntro')).toBe(
+      'Encontramos estas coincidencias en el texto detectado.',
+    );
+  });
+
+  it('la promesa de privacidad está escrita, no solo en el código', () => {
+    expect(translate('es', 'label.privacy')).toContain('no sale de tu dispositivo');
+    expect(translate('en', 'label.privacy')).toContain('does not leave your device');
   });
 });
 
-describe('lector de ejemplo', () => {
-  it('se identifica como tal, para que nadie confunda la demo con su foto', async () => {
-    const lectura = await mockOcrProvider.recognize('file://etiqueta.jpg');
-    expect(lectura.provider).toBe('mock');
+describe('normalización de la salida de cualquier motor', () => {
+  it('entiende la forma de tesseract.js: bloques con párrafos y líneas', () => {
+    const salida = normalizeOcrPayload(
+      {
+        text: 'INGREDIENTES: leche\nen polvo',
+        blocks: [
+          {
+            text: 'INGREDIENTES: leche en polvo',
+            paragraphs: [{ lines: [{ text: 'INGREDIENTES: leche' }, { text: 'en polvo' }] }],
+          },
+        ],
+      },
+      { engine: 'tesseract.js@7', platform: 'web' },
+    );
+
+    expect(salida.lines).toEqual(['INGREDIENTES: leche', 'en polvo']);
+    expect(salida.blocks).toHaveLength(1);
+    expect(salida.engine).toBe('tesseract.js@7');
+    expect(salida.platform).toBe('web');
+  });
+
+  it('entiende la forma de ML Kit: bloques con líneas directas', () => {
+    const salida = normalizeOcrPayload(
+      {
+        text: 'Contiene: soja',
+        blocks: [{ text: 'Contiene: soja', lines: [{ text: 'Contiene: soja' }] }],
+      },
+      { engine: 'mlkit', platform: 'android' },
+    );
+
+    expect(salida.lines).toEqual(['Contiene: soja']);
+    expect(salida.platform).toBe('android');
+  });
+
+  it('se apaña con un motor que solo devuelve texto suelto', () => {
+    const salida = normalizeOcrPayload(
+      { text: 'harina de trigo\n\n  sal  ' },
+      { engine: 'otro', platform: 'web' },
+    );
+
+    expect(salida.lines).toEqual(['harina de trigo', 'sal']);
+    expect(salida.blocks).toEqual([]);
+  });
+
+  it('no inventa nada cuando no se leyó nada', () => {
+    const salida = normalizeOcrPayload({}, { engine: 'otro', platform: 'web' });
+
+    expect(salida.rawText).toBe('');
+    expect(salida.lines).toEqual([]);
+    expect(hasUsableText(salida)).toBe(false);
+  });
+
+  it('dos caracteres sueltos no son una etiqueta', () => {
+    const casi = normalizeOcrPayload({ text: 'a b' }, { engine: 'otro', platform: 'web' });
+    expect(hasUsableText(casi)).toBe(false);
+  });
+});
+
+describe('fixture de laboratorio', () => {
+  it('se marca como fixture, para que nunca se confunda con una lectura real', async () => {
+    const lectura = await fixtureLabelOcrProvider.recognize({ uri: 'file://etiqueta.jpg' });
+    expect(lectura.engine).toBe('fixture');
+    expect(lectura.platform).toBe('test');
   });
 
   it('devuelve una etiqueta que el resto del camino sabe leer', async () => {
-    const lectura = await mockOcrProvider.recognize('file://etiqueta.jpg');
+    const lectura = await fixtureLabelOcrProvider.recognize({ uri: 'file://etiqueta.jpg' });
     const resultado = buildLabelScanResult({
-      rawText: lectura.text,
+      rawText: lectura.rawText,
       catalog: CATALOGO,
       statusByKey: { cow_milk: 'avoid' },
     });
 
+    expect(lectura.rawText).toBe(LABEL_FIXTURE_TEXT);
     expect(describeDetected(resultado).length).toBeGreaterThan(0);
     expect(resultado.avoid.length).toBeGreaterThan(0);
   });

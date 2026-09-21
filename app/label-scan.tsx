@@ -1,7 +1,6 @@
-import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 
 import {
   Button,
@@ -15,9 +14,11 @@ import {
   SectionHeader,
   Text,
   colors,
+  radius,
   spacing,
 } from '@/design-system';
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
+import { LabelCapture } from '@/features/labels/LabelCapture';
 import { normalizeIngredient, parseIngredientList } from '@/features/labels/ingredients';
 import {
   buildLabelScanResult,
@@ -25,28 +26,42 @@ import {
   type LabelScanFinding,
   type LabelScanResult,
 } from '@/features/labels/label-scan';
-import { isMockOcr, recognizeLabel } from '@/features/labels/ocr';
+import {
+  getLabelOcrProvider,
+  hasUsableText,
+  type LabelOcrImage,
+  type LabelOcrResult,
+} from '@/features/labels/ocr';
 import { useLabelCatalog } from '@/features/labels/useLabelCatalog';
 import { useI18n } from '@/lib/i18n';
 
-type Paso = 'capturar' | 'confirmar' | 'resultados';
-
 /**
- * Leer una etiqueta.
+ * Leer una etiqueta, de verdad y en cualquier plataforma.
  *
- * El camino es siempre el mismo y siempre termina en la persona:
+ * El camino es siempre el mismo —web, iOS o Android— y siempre termina en la
+ * persona:
  *
- *   foto o texto → se lee → se enseña lo leído tal cual → la persona confirma
- *   o corrige los ingredientes → se compara con SU panel de alimentos →
- *   resultados.
+ *   foto → previsualización → "usar" o "repetir" → se lee el texto →
+ *   se enseña TAL CUAL y se puede corregir → ingredientes →
+ *   comparación con SU panel de alimentos → resultados
  *
- * Los resultados hablan de coincidencias de texto con una lista que hizo una
- * familia. Nunca dicen que algo sea seguro, ni que se pueda dar, ni que no
- * contenga alérgenos: AliApp no sabe qué lleva dentro un envase (§10).
+ * Qué motor lee el texto no se decide aquí: esta pantalla pide
+ * `getLabelOcrProvider()` y recibe texto normalizado. En web es tesseract.js
+ * sobre WebAssembly; en el teléfono, ML Kit. Cambiar de motor no toca este
+ * fichero.
  *
- * Por eso el aviso de verificar la etiqueta original está SIEMPRE en pantalla,
- * haya coincidencias o no.
+ * Dos reglas que no se negocian:
+ *
+ *   · La interpretación NUNCA se guarda sola. El texto detectado es editable
+ *     antes de comparar, porque el OCR se equivoca y quien tiene el envase en
+ *     la mano es quien sabe lo que pone.
+ *   · Los resultados hablan de coincidencias de TEXTO con una lista que hizo
+ *     una familia. Nunca de que un producto sea seguro, ni de que se pueda dar,
+ *     ni de que no contenga alérgenos (§10).
  */
+
+type Paso = 'capturar' | 'revisar' | 'leyendo' | 'texto' | 'ingredientes' | 'resultados';
+
 export default function LabelScanScreen() {
   const { t } = useI18n();
   const router = useRouter();
@@ -55,64 +70,65 @@ export default function LabelScanScreen() {
     baby?.id ?? null,
   );
 
+  const provider = useMemo(() => getLabelOcrProvider(), []);
+  const [motorDisponible, setMotorDisponible] = useState<boolean | null>(null);
+
   const [paso, setPaso] = useState<Paso>('capturar');
-  const [leyendo, setLeyendo] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [textoCrudo, setTextoCrudo] = useState('');
+  const [imagen, setImagen] = useState<LabelOcrImage | null>(null);
+  const [progreso, setProgreso] = useState(0);
+  const [lectura, setLectura] = useState<LabelOcrResult | null>(null);
+  const [texto, setTexto] = useState('');
   const [ingredientes, setIngredientes] = useState<string[]>([]);
   const [descartados, setDescartados] = useState<string[]>([]);
   const [nuevo, setNuevo] = useState('');
-  const [manual, setManual] = useState(false);
   const [resultado, setResultado] = useState<LabelScanResult | null>(null);
-  const [lecturaDeEjemplo, setLecturaDeEjemplo] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const leerFoto = async (fuente: 'camera' | 'library') => {
+  useEffect(() => {
+    let vivo = true;
+    void provider.isAvailable().then((disponible) => {
+      if (vivo) setMotorDisponible(disponible);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, [provider]);
+
+  const leer = async (origen: LabelOcrImage) => {
+    setPaso('leyendo');
+    setProgreso(0);
     setError(null);
 
-    // El permiso se pide aquí, cuando la persona decide leer una etiqueta.
-    const permiso =
-      fuente === 'camera'
-        ? await ImagePicker.requestCameraPermissionsAsync()
-        : await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permiso.granted) {
-      setError(t('media.permissionNeeded'));
-      return;
-    }
-
-    const seleccion =
-      fuente === 'camera'
-        ? await ImagePicker.launchCameraAsync({ quality: 1, exif: false })
-        : await ImagePicker.launchImageLibraryAsync({
-            quality: 1,
-            exif: false,
-            mediaTypes: ['images'],
-          });
-
-    if (seleccion.canceled) return;
-    const activo = seleccion.assets[0];
-    if (!activo) return;
-
-    setLeyendo(true);
     try {
-      const lectura = await recognizeLabel(activo.uri);
-      setLecturaDeEjemplo(isMockOcr());
-      aceptarTexto(lectura.text);
+      const salida = await provider.recognize(origen, setProgreso);
+
+      if (!hasUsableText(salida)) {
+        setError(t('label.unreadable'));
+        setPaso('revisar');
+        return;
+      }
+
+      setLectura(salida);
+      setTexto(salida.rawText);
+      setPaso('texto');
     } catch (cause) {
       setError((cause as Error).message);
-    } finally {
-      setLeyendo(false);
+      setPaso('revisar');
     }
   };
 
-  /** Pasa del texto leído a la lista de ingredientes que se va a confirmar. */
-  const aceptarTexto = (texto: string) => {
+  const extraerIngredientes = () => {
     const detectados = parseIngredientList(texto);
-    setTextoCrudo(texto);
+
+    if (detectados.length === 0) {
+      setError(t('label.unreadable'));
+      return;
+    }
+
     setIngredientes(detectados);
     setDescartados([]);
-    setPaso(detectados.length > 0 ? 'confirmar' : 'capturar');
-    if (detectados.length === 0) setError(t('label.unreadable'));
+    setError(null);
+    setPaso('ingredientes');
   };
 
   const confirmados = ingredientes.filter((item) => !descartados.includes(item));
@@ -120,7 +136,7 @@ export default function LabelScanScreen() {
   const comparar = () => {
     setResultado(
       buildLabelScanResult({
-        rawText: textoCrudo,
+        rawText: texto,
         catalog,
         statusByKey,
         confirmedIngredients: confirmados,
@@ -131,12 +147,14 @@ export default function LabelScanScreen() {
 
   const empezarDeNuevo = () => {
     setPaso('capturar');
-    setTextoCrudo('');
+    setImagen(null);
+    setLectura(null);
+    setTexto('');
     setIngredientes([]);
     setDescartados([]);
     setResultado(null);
     setError(null);
-    setManual(false);
+    setProgreso(0);
   };
 
   return (
@@ -146,8 +164,17 @@ export default function LabelScanScreen() {
       <QueryState loading={isLoading} error={isError} onRetry={refetch}>
         <Text color={colors.textSecondary}>{t('label.intro')}</Text>
         <Text variant="caption" color={colors.textSecondary}>
-          {t('label.limits')}
+          {t('label.privacy')}
         </Text>
+
+        {motorDisponible === false ? (
+          <Card>
+            <Text variant="bodyStrong">{t('label.unavailable')}</Text>
+            <Text variant="caption" color={colors.textSecondary}>
+              {t('label.unavailableHint')}
+            </Text>
+          </Card>
+        ) : null}
 
         {!hasAvoidList ? (
           <Card>
@@ -165,73 +192,65 @@ export default function LabelScanScreen() {
         ) : null}
 
         {paso === 'capturar' ? (
+          <LabelCapture
+            onCaptured={(capturada) => {
+              setImagen(capturada);
+              setError(null);
+              setPaso('revisar');
+            }}
+          />
+        ) : null}
+
+        {/* Previsualización: mirar la foto antes de gastar tiempo leyéndola. */}
+        {paso === 'revisar' && imagen ? (
           <Card>
-            <Button
-              label={t('media.takePhoto')}
-              loading={leyendo}
-              onPress={() => {
-                void leerFoto('camera');
-              }}
-            />
-            <Button
-              variant="secondary"
-              label={t('media.fromLibrary')}
-              onPress={() => {
-                void leerFoto('library');
-              }}
-            />
-            <Divider />
-            {/* Sin cámara a mano, o con una etiqueta ilegible: se escribe. */}
-            <Button
-              variant="ghost"
-              label={t('label.pasteText')}
-              onPress={() => setManual((valor) => !valor)}
-            />
-            {manual ? (
-              <View style={styles.stack}>
-                <Input
-                  label={t('label.rawText')}
-                  placeholder={t('label.pastePlaceholder')}
-                  value={textoCrudo}
-                  onChangeText={setTextoCrudo}
-                  multiline
-                />
-                <Button
-                  label={t('label.confirmReading')}
-                  disabled={textoCrudo.trim().length === 0}
-                  onPress={() => {
-                    setLecturaDeEjemplo(false);
-                    aceptarTexto(textoCrudo);
-                  }}
-                />
-              </View>
-            ) : null}
-            {leyendo ? (
-              <Text variant="caption" color={colors.textSecondary}>
-                {t('label.reading')}
-              </Text>
-            ) : null}
+            <Image source={{ uri: imagen.uri }} style={styles.preview} resizeMode="contain" />
+            <Button label={t('label.usePhoto')} onPress={() => void leer(imagen)} />
+            <Button variant="secondary" label={t('label.retake')} onPress={empezarDeNuevo} />
           </Card>
         ) : null}
 
-        {paso !== 'capturar' ? (
+        {paso === 'leyendo' ? (
           <Card>
-            <SectionHeader title={t('label.rawText')} subtitle={t('label.rawHint')} />
-            <Text variant="caption">{textoCrudo}</Text>
-            {lecturaDeEjemplo ? (
-              <Text variant="caption" color={colors.textSecondary}>
-                {t('label.mockNotice')}
-              </Text>
-            ) : null}
+            <Text variant="bodyStrong">{t('label.reading')}</Text>
+            <ProgressBar value={progreso} />
+            <Text variant="caption" color={colors.textSecondary}>
+              {t('label.processingHint')}
+            </Text>
           </Card>
         ) : null}
 
-        {paso === 'confirmar' ? (
+        {/* El texto se enseña siempre y se puede corregir siempre. */}
+        {paso === 'texto' ? (
           <Card>
-            <SectionHeader
-              title={t('label.ingredients')}
-              subtitle={t('label.ingredientsHint')}
+            <SectionHeader title={t('label.rawText')} subtitle={t('label.editText')} />
+            <Input
+              label={t('label.rawText')}
+              value={texto}
+              onChangeText={setTexto}
+              multiline
+              numberOfLines={8}
+              style={styles.textoLeido}
             />
+            {lectura ? (
+              <Text variant="caption" color={colors.textSecondary}>
+                {lectura.engine === 'fixture'
+                  ? t('label.fixtureNotice')
+                  : t('label.engineNotice', { engine: lectura.engine })}
+              </Text>
+            ) : null}
+            <Button
+              label={t('label.continueStep')}
+              disabled={texto.trim().length === 0}
+              onPress={extraerIngredientes}
+            />
+            <Button variant="ghost" label={t('label.retake')} onPress={empezarDeNuevo} />
+          </Card>
+        ) : null}
+
+        {paso === 'ingredientes' ? (
+          <Card>
+            <SectionHeader title={t('label.ingredients')} subtitle={t('label.ingredientsHint')} />
             <View style={styles.chips}>
               {ingredientes.map((item) => (
                 <Chip
@@ -267,16 +286,19 @@ export default function LabelScanScreen() {
               disabled={confirmados.length === 0}
               onPress={comparar}
             />
+            <Button variant="ghost" label={t('common.back')} onPress={() => setPaso('texto')} />
           </Card>
         ) : null}
 
-        {paso === 'resultados' && resultado ? (
-          <Resultados resultado={resultado} />
-        ) : null}
+        {paso === 'resultados' && resultado ? <Resultados resultado={resultado} /> : null}
 
-        {/* Siempre visible, haya o no coincidencias. */}
+        {/* Siempre visible, en todos los pasos y haya o no coincidencias. */}
         <Card>
           <Text variant="bodyStrong">{t('label.verifyOriginal')}</Text>
+          <Text variant="caption" color={colors.textSecondary}>
+            {t('label.ocrMayErr')}
+          </Text>
+          <Divider />
           <Text variant="caption" color={colors.textSecondary}>
             {t('safety.notDiagnostic')}
           </Text>
@@ -292,12 +314,27 @@ export default function LabelScanScreen() {
   );
 }
 
+/** Barra de progreso simple: leer una etiqueta tarda y hay que notarlo. */
+function ProgressBar({ value }: { value: number }) {
+  const porcentaje = Math.round(Math.min(1, Math.max(0, value)) * 100);
+
+  return (
+    <View
+      style={styles.barra}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ now: porcentaje, min: 0, max: 100 }}
+    >
+      <View style={[styles.barraRelleno, { width: `${porcentaje}%` }]} />
+    </View>
+  );
+}
+
 function Resultados({ resultado }: { resultado: LabelScanResult }) {
   const { t } = useI18n();
 
   return (
     <View style={styles.stack}>
-      <SectionHeader title={t('label.results')} />
+      <SectionHeader title={t('label.results')} subtitle={t('label.matchesIntro')} />
 
       {/* Lo leído, enumerado. Sin adjetivos ni conclusiones. */}
       <Card>
@@ -368,4 +405,18 @@ function capitalizar(valor: string): string {
 const styles = StyleSheet.create({
   stack: { gap: spacing.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  preview: {
+    width: '100%',
+    height: 260,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
+  },
+  textoLeido: { minHeight: 160, textAlignVertical: 'top' },
+  barra: {
+    height: 8,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceMuted,
+    overflow: 'hidden',
+  },
+  barraRelleno: { height: 8, borderRadius: radius.pill, backgroundColor: colors.brand },
 });

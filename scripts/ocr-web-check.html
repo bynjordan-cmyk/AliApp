@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Prueba de OCR real</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "tesseract.js": "/vendor/tesseract-shim.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="estado">arrancando</div>
+    <div id="lienzos"></div>
+
+    <script type="module">
+      // El proveedor lee la configuración como lo hace el bundle de Expo.
+      globalThis.process = { env: { EXPO_PUBLIC_OCR_ASSET_BASE: '/ocr' } };
+
+      const { webLabelOcrProvider } = await import('/providers/web.js');
+      const { parseIngredientList } = await import('/ingredients.js');
+      const { buildLabelScanResult } = await import('/label-scan.js');
+
+      /**
+       * Dibuja una etiqueta en un canvas, exactamente igual que hace la
+       * aplicación cuando captura un fotograma de la cámara: canvas →
+       * toDataURL → motor de OCR.
+       */
+      function pintarEtiqueta(lineas) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1000;
+        canvas.height = 90 + lineas.length * 62;
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#111111';
+        ctx.font = '38px "DejaVu Sans", sans-serif';
+
+        lineas.forEach((linea, indice) => {
+          ctx.fillText(linea, 40, 80 + indice * 62);
+        });
+
+        document.getElementById('lienzos').appendChild(canvas);
+        return canvas.toDataURL('image/jpeg', 0.95);
+      }
+
+      const ETIQUETA_A = [
+        'INGREDIENTES: harina de trigo,',
+        'leche en polvo, aceite de girasol,',
+        'azucar, sal, lecitina de soja.',
+      ];
+
+      const ETIQUETA_B = [
+        'INGREDIENTES: agua, arroz,',
+        'zanahoria, aceite de oliva,',
+        'patata, sal.',
+      ];
+
+      const CATALOGO = [
+        { canonicalKey: 'cow_milk', displayName: 'Leche de vaca' },
+        { canonicalKey: 'wheat', displayName: 'Trigo' },
+        { canonicalKey: 'soy', displayName: 'Soja' },
+        { canonicalKey: 'rice', displayName: 'Arroz' },
+        { canonicalKey: 'carrot', displayName: 'Zanahoria' },
+        { canonicalKey: 'potato', displayName: 'Patata' },
+      ];
+
+      const ESTADOS = { cow_milk: 'avoid', wheat: 'tolerated', rice: 'tolerated' };
+
+      const salida = { pasos: [] };
+
+      try {
+        const uriA = pintarEtiqueta(ETIQUETA_A);
+        const uriB = pintarEtiqueta(ETIQUETA_B);
+
+        document.getElementById('estado').textContent = 'leyendo A';
+        const progresosA = [];
+        const lecturaA = await webLabelOcrProvider.recognize({ uri: uriA }, (p) =>
+          progresosA.push(p),
+        );
+
+        document.getElementById('estado').textContent = 'leyendo B';
+        const lecturaB = await webLabelOcrProvider.recognize({ uri: uriB });
+
+        const ingredientesA = parseIngredientList(lecturaA.rawText);
+        const ingredientesB = parseIngredientList(lecturaB.rawText);
+
+        const resultadoA = buildLabelScanResult({
+          rawText: lecturaA.rawText,
+          catalog: CATALOGO,
+          statusByKey: ESTADOS,
+        });
+        const resultadoB = buildLabelScanResult({
+          rawText: lecturaB.rawText,
+          catalog: CATALOGO,
+          statusByKey: ESTADOS,
+        });
+
+        salida.ok = true;
+        salida.a = {
+          rawText: lecturaA.rawText,
+          engine: lecturaA.engine,
+          platform: lecturaA.platform,
+          lineas: lecturaA.lines,
+          bloques: lecturaA.blocks.length,
+          ingredientes: ingredientesA,
+          avoid: resultadoA.avoid.map((h) => `${h.matchedTerm}→${h.canonicalKey}`),
+          otras: resultadoA.other.map((h) => h.canonicalKey),
+          progresos: progresosA.length,
+        };
+        salida.b = {
+          rawText: lecturaB.rawText,
+          engine: lecturaB.engine,
+          lineas: lecturaB.lines,
+          ingredientes: ingredientesB,
+          avoid: resultadoB.avoid.map((h) => `${h.matchedTerm}→${h.canonicalKey}`),
+          otras: resultadoB.other.map((h) => h.canonicalKey),
+        };
+      } catch (error) {
+        salida.ok = false;
+        salida.error = String(error && error.stack ? error.stack : error);
+      }
+
+      window.__RESULTADO__ = salida;
+      document.getElementById('estado').textContent = 'listo';
+    </script>
+  </body>
+</html>
