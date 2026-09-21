@@ -248,10 +248,27 @@ function FoodForm({ babyId, context, onDone, onError }: FormProps) {
   );
 }
 
+/**
+ * Pañal.
+ *
+ * El mínimo es un toque: el tipo. Todo el detalle clínico/contextual vive tras
+ * "más opciones", que es divulgación progresiva (§15): quien tiene prisa
+ * guarda en dos toques y quien quiere detallar, detalla.
+ */
 function DiaperForm({ babyId, context, onDone, onError }: FormProps) {
   const t = useT();
   const [type, setType] = useState<DiaperType | null>(null);
+  const [detalle, setDetalle] = useState(false);
+  const [amount, setAmount] = useState<'scant' | 'moderate' | 'large' | undefined>(undefined);
+  const [mucus, setMucus] = useState(false);
+  const [blood, setBlood] = useState(false);
+  const [residue, setResidue] = useState(false);
+  const [straining, setStraining] = useState(false);
+  const [odor, setOdor] = useState(false);
+  const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const esDeposicion = type === 'stool' || type === 'both';
 
   return (
     <Card>
@@ -266,6 +283,51 @@ function DiaperForm({ babyId, context, onDone, onError }: FormProps) {
           />
         ))}
       </View>
+
+      {esDeposicion ? (
+        <Button
+          variant="ghost"
+          label={detalle ? t('common.close') : t('quickLog.moreOptions')}
+          onPress={() => setDetalle((v) => !v)}
+        />
+      ) : null}
+
+      {esDeposicion && detalle ? (
+        <View style={styles.detalle}>
+          <Text variant="caption" color={colors.textSecondary}>
+            {t('diaper.amount')}
+          </Text>
+          <View style={styles.kinds}>
+            {(['scant', 'moderate', 'large'] as const).map((value) => (
+              <Chip
+                key={value}
+                label={t(`diaper.amount_${value}` as 'diaper.amount_scant')}
+                selected={amount === value}
+                onPress={() => setAmount(amount === value ? undefined : value)}
+              />
+            ))}
+          </View>
+
+          <View style={styles.kinds}>
+            <Chip label={t('diaper.mucus')} selected={mucus} onPress={() => setMucus(!mucus)} />
+            <Chip label={t('diaper.blood')} selected={blood} onPress={() => setBlood(!blood)} />
+            <Chip
+              label={t('diaper.foodResidue')}
+              selected={residue}
+              onPress={() => setResidue(!residue)}
+            />
+            <Chip
+              label={t('diaper.straining')}
+              selected={straining}
+              onPress={() => setStraining(!straining)}
+            />
+            <Chip label={t('diaper.odor')} selected={odor} onPress={() => setOdor(!odor)} />
+          </View>
+
+          <Input label={t('common.notes')} value={notes} onChangeText={setNotes} multiline />
+        </View>
+      ) : null}
+
       <Button
         label={t('common.save')}
         disabled={!type}
@@ -274,7 +336,18 @@ function DiaperForm({ babyId, context, onDone, onError }: FormProps) {
           if (!type) return;
           setSaving(true);
           createDiaperEvent(
-            { babyId, occurredAt: new Date().toISOString(), diaperType: type },
+            {
+              babyId,
+              occurredAt: new Date().toISOString(),
+              diaperType: type,
+              stoolAmount: esDeposicion ? amount : undefined,
+              mucus: esDeposicion && mucus ? true : undefined,
+              bloodObserved: esDeposicion && blood ? true : undefined,
+              visibleFoodResidue: esDeposicion && residue ? true : undefined,
+              straining: esDeposicion && straining ? true : undefined,
+              unusualOdor: esDeposicion && odor ? true : undefined,
+              notes: notes.trim() ? notes.trim() : undefined,
+            },
             context,
           )
             .then(onDone)
@@ -385,5 +458,6 @@ function MedicationForm({ babyId, context, onDone, onError }: FormProps) {
 
 const styles = StyleSheet.create({
   kinds: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  detalle: { gap: spacing.sm },
   foodList: { maxHeight: 240 },
 });
