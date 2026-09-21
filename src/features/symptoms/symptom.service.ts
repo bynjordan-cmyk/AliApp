@@ -1,6 +1,7 @@
 import { newId } from '@/lib/ids';
 import { getSupabaseClient, type AliappClient } from '@/lib/supabase';
-import type { SymptomInput } from '@/lib/validation';
+import type { TablesUpdate } from '@/lib/supabase/database.types';
+import { toColumnPatch, type SymptomInput, type SymptomPatch } from '@/lib/validation';
 import type { Symptom } from '@/types/domain';
 import { unwrap } from '@/services/errors';
 import { buildSoftDeletePatch } from '@/services/soft-delete';
@@ -61,4 +62,41 @@ export async function softDeleteSymptom(
 ): Promise<void> {
   const { error } = await client.from('symptoms').update(buildSoftDeletePatch()).eq('id', id);
   if (error) throw new Error(`[AliApp] softDeleteSymptom: ${error.message}`);
+}
+
+/**
+ * Corrige un síntoma.
+ *
+ * Sigue sin existir ningún campo de alimento sospechoso: corregir un síntoma
+ * nunca es la puerta trasera para atribuirle una causa (§27).
+ */
+export async function updateSymptom(
+  id: string,
+  patch: SymptomPatch,
+  client: AliappClient = getSupabaseClient(),
+): Promise<Symptom> {
+  const row = toColumnPatch<SymptomPatch, TablesUpdate<'symptoms'>>(patch, {
+    symptomType: 'symptom_type',
+    startedAt: 'started_at',
+    endedAt: 'ended_at',
+    severity: 'severity',
+    notes: 'notes',
+  });
+
+  const [updated] = unwrap(
+    'updateSymptom',
+    await client.from('symptoms').update(row).eq('id', id).select('*'),
+  );
+
+  if (!updated) throw new Error('[AliApp] updateSymptom: sin fila devuelta');
+  return updated;
+}
+
+export async function getSymptom(
+  id: string,
+  client: AliappClient = getSupabaseClient(),
+): Promise<Symptom> {
+  const [row] = unwrap('getSymptom', await client.from('symptoms').select('*').eq('id', id));
+  if (!row) throw new Error('[AliApp] getSymptom: no encontrado');
+  return row;
 }

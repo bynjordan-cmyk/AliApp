@@ -13,7 +13,7 @@ Resumen de lo que se añadió, con lo verificado y lo que queda pendiente.
 | 5 · Cross-log de deposiciones | Hecho | `src/features/diapers/` |
 | 6 · Recordatorios | Fundación | `src/features/notifications/` |
 | 7 · Ali Capture | Fundación parcial | `src/features/capture/` |
-| 8 · Label Scan | No iniciado | — |
+| 8 · Label Scan | Hecho (OCR con proveedor sustituible) | `app/label-scan.tsx`, `src/features/labels/` |
 | 9 · Estados vacíos | Hecho | catálogos `es`/`en` |
 | 10 · Accesibilidad | Revisado | ver abajo |
 

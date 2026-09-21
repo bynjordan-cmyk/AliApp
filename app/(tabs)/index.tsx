@@ -25,6 +25,8 @@ import { WeekStrip } from '@/features/dashboard/WeekStrip';
 import { buildDailySummary } from '@/features/dashboard/daily-summary';
 import { useActiveJourneys } from '@/features/journeys/useJourneys';
 import { useReminders } from '@/features/notifications/useReminders';
+import { PendingRecordsCard } from '@/features/records/PendingRecordsCard';
+import { pendingRecords } from '@/features/records/completeness';
 import { QuickLogFab } from '@/features/today/QuickLogFab';
 import { buildHighlight } from '@/features/today/highlight';
 import { TimelineRail } from '@/features/timeline/TimelineRail';
@@ -108,6 +110,13 @@ export default function HomeScreen() {
     [itemsDelDia, journeys.data, reminders.data],
   );
 
+  // Registros recientes a los que se les puede añadir algo. Se calculan sobre
+  // la semana entera, no sobre el día elegido: lo de anoche sigue valiendo.
+  const pendientes = useMemo(
+    () => pendingRecords(todosLosItems, { now: new Date(summary.generatedAt) }),
+    [todosLosItems, summary.generatedAt],
+  );
+
   if (!baby) {
     return (
       <Screen>
@@ -137,6 +146,8 @@ export default function HomeScreen() {
         reminders={summary.upcomingReminders}
         generatedAt={summary.generatedAt}
       />
+
+      <PendingRecordsCard records={pendientes} />
     </View>
   );
 

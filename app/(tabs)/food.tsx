@@ -1,9 +1,11 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import {
   QueryState,
   PageHeader,
+  Button,
   Chip,
   EmptyState,
   ListItem,
@@ -25,6 +27,7 @@ type FoodTab = 'baby' | 'caregiver' | 'breastfeeding' | 'board';
 export default function FoodScreen() {
   const { t, locale } = useI18n();
   const { baby } = useActiveBaby();
+  const router = useRouter();
   const [tab, setTab] = useState<FoodTab>('baby');
 
   const foodEntries = useFoodEntries(baby?.id ?? null);
@@ -45,6 +48,14 @@ export default function FoodScreen() {
     <Screen>
       <PageHeader title={t('food.title')} icon="restaurant-outline" />
       <BabySelector />
+
+      {/* Leer una etiqueta es parte de alimentar, así que vive aquí arriba. */}
+      <Button
+        variant="secondary"
+        label={t('label.cta')}
+        accessibilityHint={t('label.limits')}
+        onPress={() => router.push('/label-scan')}
+      />
 
       <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
         <Chip label={t('food.babyLog')} selected={tab === 'baby'} onPress={() => setTab('baby')} />
@@ -89,6 +100,7 @@ export default function FoodScreen() {
                   subtitle={entry.notes ?? undefined}
                   meta={`${formatDate(entry.occurred_at, locale)} · ${formatTime(entry.occurred_at, locale)}`}
                   tint={eventColors.food}
+                  onPress={() => router.push(`/record/food_entry/${entry.id}`)}
                 />
               ))}
             {(foodEntries.data ?? []).filter((entry) =>
@@ -108,10 +120,11 @@ export default function FoodScreen() {
             {(breastfeeds.data ?? []).map((row) => (
               <ListItem
                 key={row.id}
-                title={t('timeline.breastfeed')}
+                title={t(`feedKind.${row.feed_kind}` as 'feedKind.breast')}
                 subtitle={row.side ? t(`breastfeed.${row.side}`) : undefined}
                 meta={formatTime(row.started_at, locale)}
                 tint={eventColors.breastfeed}
+                onPress={() => router.push(`/record/breastfeed/${row.id}`)}
               />
             ))}
             {(breastfeeds.data ?? []).length === 0 ? (

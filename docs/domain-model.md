@@ -32,14 +32,19 @@ idioma no cambia ningún identificador ni ningún dato histórico.
 | Tabla | Nota |
 | --- | --- |
 | `food_entries` + `food_entry_items` | Comida del bebé **o** de la madre/cuidador; una restricción garantiza que el sujeto sea coherente |
-| `breastfeeds` | Tomas, con lado e intervalo opcionales |
-| `diaper_events` | Descriptivo: consistencia, color, mucosidad, sangre observada |
+| `breastfeeds` | Toma de leche: `feed_kind` distingue pecho, fórmula y leche extraída. Lado solo para pecho; cantidad y marca opcionales |
+| `diaper_events` | Descriptivo: consistencia, color, cantidad, mucosidad, sangre observada, restos de alimento, esfuerzo, olor |
 | `symptoms` | Observación **autónoma**; sin alimento sospechoso encima |
 | `reaction_episodes` + `episode_symptoms` | Un episodio **agrupa** síntomas |
 | `medication_events` | Registro factual; AliApp nunca sugiere dosis |
 
 Todos tienen `occurred_at` (cuándo pasó), `created_at`/`updated_at`
-(auditoría) y `deleted_at` (borrado lógico).
+(auditoría), `edited_at` (alguien lo corrigió después) y `deleted_at` (borrado
+lógico).
+
+Todos son **editables**, incluido `occurred_at`. `created_at` y `created_by` no
+se tocan nunca: quien corrige la hora está ordenando la historia real, no
+falseando cuándo se registró.
 
 ## Grafo de exposiciones
 
@@ -83,6 +88,19 @@ Dos garantías escritas en la base:
 
 `media_assets` centraliza fotos y documentos. `storage_path` empieza siempre
 por el household id y hay una restricción CHECK que lo exige.
+
+## Historial de correcciones
+
+`event_revisions` guarda la diferencia de cada actualización de las seis tablas
+de evento: qué columna cambió, de qué a qué, quién y cuándo.
+
+La escribe el trigger `app.track_event_edit()`, que es `SECURITY DEFINER`. El
+cliente no puede insertar ahí (no hay política de INSERT para `authenticated`),
+así que el historial no depende de que la aplicación se acuerde de anotarlo ni
+se puede falsear desde fuera. Los miembros del hogar sí pueden leerlo.
+
+Un borrado lógico se guarda con `kind = 'delete'` y **no** marca `edited_at`:
+retirar un registro no es haberlo corregido.
 
 ## Vistas y funciones
 

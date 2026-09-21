@@ -1,6 +1,11 @@
 import { newId } from '@/lib/ids';
 import { getSupabaseClient, type AliappClient } from '@/lib/supabase';
-import type { ReactionEpisodeInput } from '@/lib/validation';
+import type { TablesUpdate } from '@/lib/supabase/database.types';
+import {
+  toColumnPatch,
+  type ReactionEpisodeInput,
+  type ReactionEpisodePatch,
+} from '@/lib/validation';
 import type {
   EpisodeExposureRelation,
   ExposureConfidenceLabel,
@@ -136,4 +141,38 @@ export async function softDeleteEpisode(
     .eq('id', episodeId);
 
   if (error) throw new Error(`[AliApp] softDeleteEpisode: ${error.message}`);
+}
+
+/** Corrige un episodio: su ventana temporal, su estado o sus notas. */
+export async function updateEpisode(
+  id: string,
+  patch: ReactionEpisodePatch,
+  client: AliappClient = getSupabaseClient(),
+): Promise<ReactionEpisode> {
+  const row = toColumnPatch<ReactionEpisodePatch, TablesUpdate<'reaction_episodes'>>(patch, {
+    startedAt: 'started_at',
+    endedAt: 'ended_at',
+    status: 'status',
+    notes: 'notes',
+  });
+
+  const [updated] = unwrap(
+    'updateEpisode',
+    await client.from('reaction_episodes').update(row).eq('id', id).select('*'),
+  );
+
+  if (!updated) throw new Error('[AliApp] updateEpisode: sin fila devuelta');
+  return updated;
+}
+
+export async function getEpisode(
+  id: string,
+  client: AliappClient = getSupabaseClient(),
+): Promise<ReactionEpisode> {
+  const [row] = unwrap(
+    'getEpisode',
+    await client.from('reaction_episodes').select('*').eq('id', id),
+  );
+  if (!row) throw new Error('[AliApp] getEpisode: no encontrado');
+  return row;
 }

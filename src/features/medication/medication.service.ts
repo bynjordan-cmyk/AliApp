@@ -1,6 +1,11 @@
 import { newId } from '@/lib/ids';
 import { getSupabaseClient, type AliappClient } from '@/lib/supabase';
-import type { MedicationEventInput } from '@/lib/validation';
+import type { TablesUpdate } from '@/lib/supabase/database.types';
+import {
+  toColumnPatch,
+  type MedicationEventInput,
+  type MedicationEventPatch,
+} from '@/lib/validation';
 import type { MedicationEvent } from '@/types/domain';
 import { unwrap } from '@/services/errors';
 import { buildSoftDeletePatch } from '@/services/soft-delete';
@@ -64,4 +69,39 @@ export async function softDeleteMedicationEvent(
     .eq('id', id);
 
   if (error) throw new Error(`[AliApp] softDeleteMedicationEvent: ${error.message}`);
+}
+
+/** Corrige una medicación registrada. La dosis sigue siendo texto libre (§10). */
+export async function updateMedicationEvent(
+  id: string,
+  patch: MedicationEventPatch,
+  client: AliappClient = getSupabaseClient(),
+): Promise<MedicationEvent> {
+  const row = toColumnPatch<MedicationEventPatch, TablesUpdate<'medication_events'>>(patch, {
+    name: 'name',
+    doseText: 'dose_text',
+    occurredAt: 'occurred_at',
+    reasonText: 'reason_text',
+    notes: 'notes',
+  });
+
+  const [updated] = unwrap(
+    'updateMedicationEvent',
+    await client.from('medication_events').update(row).eq('id', id).select('*'),
+  );
+
+  if (!updated) throw new Error('[AliApp] updateMedicationEvent: sin fila devuelta');
+  return updated;
+}
+
+export async function getMedicationEvent(
+  id: string,
+  client: AliappClient = getSupabaseClient(),
+): Promise<MedicationEvent> {
+  const [row] = unwrap(
+    'getMedicationEvent',
+    await client.from('medication_events').select('*').eq('id', id),
+  );
+  if (!row) throw new Error('[AliApp] getMedicationEvent: no encontrado');
+  return row;
 }

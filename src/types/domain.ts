@@ -58,6 +58,8 @@ export type FoodSubjectType = Enums<'food_subject_type'>;
 export type MealType = Enums<'meal_type'>;
 export type DiaperType = Enums<'diaper_type'>;
 export type BreastSide = Enums<'breast_side'>;
+/** Vía de la toma de leche: pecho, fórmula o leche extraída. */
+export type FeedKind = Enums<'feed_kind'>;
 export type EpisodeStatus = Enums<'episode_status'>;
 
 /** Intensidad observada por la familia (1..3). No es una escala clínica. */
@@ -140,3 +142,10 @@ export const REMINDER_CATEGORIES: readonly ReminderCategory[] = [
 
 // --- Detalle de deposición --------------------------------------------------
 export type StoolAmount = Enums<'stool_amount'>;
+
+// --- Historial de correcciones ----------------------------------------------
+/**
+ * Una corrección registrada por la base. La escribe un trigger, no el cliente:
+ * el historial no depende de que la app se acuerde de anotarlo.
+ */
+export type EventRevision = Tables<'event_revisions'>;

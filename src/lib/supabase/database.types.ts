@@ -114,6 +114,10 @@ export type Database = {
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
+          edited_at: string | null;
+          feed_kind: Database['public']['Enums']['feed_kind'];
+          amount_ml: number | null;
+          brand: string | null;
         };
         Insert: {
           id?: string;
@@ -128,6 +132,10 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
+          feed_kind?: Database['public']['Enums']['feed_kind'];
+          amount_ml?: number | null;
+          brand?: string | null;
         };
         Update: {
           id?: string;
@@ -142,6 +150,10 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
+          feed_kind?: Database['public']['Enums']['feed_kind'];
+          amount_ml?: number | null;
+          brand?: string | null;
         };
         Relationships: [];
       };
@@ -165,6 +177,7 @@ export type Database = {
           visible_food_residue: boolean | null;
           straining: boolean | null;
           unusual_odor: boolean | null;
+          edited_at: string | null;
         };
         Insert: {
           id?: string;
@@ -185,6 +198,7 @@ export type Database = {
           visible_food_residue?: boolean | null;
           straining?: boolean | null;
           unusual_odor?: boolean | null;
+          edited_at?: string | null;
         };
         Update: {
           id?: string;
@@ -205,6 +219,7 @@ export type Database = {
           visible_food_residue?: boolean | null;
           straining?: boolean | null;
           unusual_odor?: boolean | null;
+          edited_at?: string | null;
         };
         Relationships: [];
       };
@@ -247,6 +262,42 @@ export type Database = {
           episode_id?: string;
           symptom_id?: string;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      event_revisions: {
+        Row: {
+          id: string;
+          household_id: string;
+          baby_id: string | null;
+          entity_type: string;
+          entity_id: string;
+          kind: string;
+          changes: Json;
+          changed_by: string | null;
+          changed_at: string;
+        };
+        Insert: {
+          id?: string;
+          household_id: string;
+          baby_id?: string | null;
+          entity_type: string;
+          entity_id: string;
+          kind?: string;
+          changes?: Json;
+          changed_by?: string | null;
+          changed_at?: string;
+        };
+        Update: {
+          id?: string;
+          household_id?: string;
+          baby_id?: string | null;
+          entity_type?: string;
+          entity_id?: string;
+          kind?: string;
+          changes?: Json;
+          changed_by?: string | null;
+          changed_at?: string;
         };
         Relationships: [];
       };
@@ -297,6 +348,7 @@ export type Database = {
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
+          edited_at: string | null;
         };
         Insert: {
           id?: string;
@@ -311,6 +363,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
         };
         Update: {
           id?: string;
@@ -325,6 +378,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
         };
         Relationships: [];
       };
@@ -609,6 +663,7 @@ export type Database = {
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
+          edited_at: string | null;
         };
         Insert: {
           id?: string;
@@ -623,6 +678,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
         };
         Update: {
           id?: string;
@@ -637,6 +693,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
         };
         Relationships: [];
       };
@@ -746,6 +803,7 @@ export type Database = {
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
+          edited_at: string | null;
         };
         Insert: {
           id?: string;
@@ -759,6 +817,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
         };
         Update: {
           id?: string;
@@ -772,6 +831,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
         };
         Relationships: [];
       };
@@ -849,6 +909,7 @@ export type Database = {
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
+          edited_at: string | null;
         };
         Insert: {
           id?: string;
@@ -863,6 +924,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
         };
         Update: {
           id?: string;
@@ -877,6 +939,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          edited_at?: string | null;
         };
         Relationships: [];
       };
@@ -933,7 +996,8 @@ export type Database = {
       episode_exposure_relation: 'manual' | 'temporal_candidate';
       episode_status: 'open' | 'resolved';
       exposure_confidence_label: 'insufficient_data' | 'under_observation' | 'temporally_consistent' | 'inconsistent';
-      exposure_source_type: 'baby_food' | 'maternal_food' | 'breastfeed' | 'pumped_milk' | 'unknown';
+      exposure_source_type: 'baby_food' | 'maternal_food' | 'breastfeed' | 'pumped_milk' | 'unknown' | 'formula';
+      feed_kind: 'breast' | 'formula' | 'pumped_milk';
       feeding_stage: 'milk_only' | 'milk_and_early_solids' | 'complementary_feeding' | 'family_food' | 'custom';
       food_status: 'unknown' | 'introducing' | 'observing' | 'tolerated' | 'avoid' | 'professional_supervision';
       food_status_source: 'family' | 'professional_plan' | 'system_summary';

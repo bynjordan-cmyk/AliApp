@@ -1,5 +1,6 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import {
@@ -18,27 +19,33 @@ import { ReminderPrompt } from '@/features/notifications/ReminderPrompt';
 import { useSession } from '@/features/auth/SessionProvider';
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
 import { useCreateBabyFoodEntry, useCreateBreastfeed } from '@/features/feeding/useFeeding';
+import { endBreastfeed } from '@/features/feeding/feeding.service';
+import { useOpenBreastfeed } from '@/features/feeding/useOpenBreastfeed';
 import { useFoods } from '@/features/food/useFoods';
 import { MediaStrip } from '@/features/media/MediaStrip';
+import { OccurredAtField } from '@/features/records/OccurredAtField';
 import { useCreateSymptom } from '@/features/symptoms/useSymptoms';
 import { createDiaperEvent } from '@/features/diapers/diaper.service';
 import { createMedicationEvent } from '@/features/medication/medication.service';
 import { quickLogActions } from '@/features/baby/feeding-stage';
-import { useT } from '@/lib/i18n';
-import type { BreastSide, DiaperType, SymptomSeverity } from '@/types/domain';
+import { formatTime } from '@/lib/dates';
+import { useI18n, useT } from '@/lib/i18n';
+import type { DiaperType, FeedKind, SymptomSeverity } from '@/types/domain';
 
 type QuickLogKind = 'breastfeed' | 'formula' | 'pumped_milk' | 'food' | 'diaper' | 'symptom' | 'medication';
 
 /**
- * Hoja de registro rápido (§15).
+ * Registro rápido · "registra ahora, completa después".
  *
- * Regla de diseño: como mucho 3 decisiones después de pulsar "+".
- *   1. qué tipo de evento
- *   2. el dato mínimo de ese evento (lado, tipo de pañal, alimento…)
- *   3. guardar
+ * El objetivo es que una persona agotada, con un brazo ocupado, guarde un
+ * evento en segundos. De ahí las reglas de esta pantalla:
  *
- * Todo lo demás (hora distinta de ahora, notas, detalles clínicos) aparece solo
- * si se despliega "más opciones": divulgación progresiva.
+ *   · el mínimo de cada tipo es de verdad el mínimo (tipo + hora),
+ *   · la hora viene puesta en "ahora" y se corrige de un toque,
+ *   · NINGÚN campo opcional bloquea el botón de guardar,
+ *   · lo que falte se puede añadir luego desde el detalle del registro.
+ *
+ * Guardar con pocos datos no es registrar mal. Es registrar.
  */
 export default function QuickLogScreen() {
   const t = useT();
@@ -84,6 +91,10 @@ export default function QuickLogScreen() {
     <Screen>
       <PageHeader title={t('quickLog.title')} icon="add-outline" />
 
+      <Text variant="caption" color={colors.textSecondary}>
+        {t('quickLog.completeLater')}
+      </Text>
+
       <View style={styles.kinds}>
         {(mostrarTodas ? [...acciones.primary, ...acciones.more] : acciones.primary).map(
           (value) =>
@@ -122,14 +133,33 @@ export default function QuickLogScreen() {
         />
       ) : null}
 
+      {/* Leer una etiqueta no crea un registro, pero se busca desde aquí. */}
+      {!kind ? (
+        <Button
+          variant="secondary"
+          label={t('quickLog.labelScan')}
+          onPress={() => router.push('/label-scan')}
+        />
+      ) : null}
+
       {error ? (
         <Text variant="caption" color={colors.error} accessibilityRole="alert">
           {error}
         </Text>
       ) : null}
 
-      {kind === 'breastfeed' || kind === 'formula' || kind === 'pumped_milk' ? (
-        <BreastfeedForm
+      {kind === 'breastfeed' ? (
+        <BreastfeedTimer
+          babyId={baby.id}
+          context={context}
+          onDone={() => router.back()}
+          onError={setError}
+        />
+      ) : null}
+      {kind === 'formula' || kind === 'pumped_milk' ? (
+        <BottleForm
+          key={kind}
+          feedKind={kind}
           babyId={baby.id}
           context={context}
           onDone={() => router.back()}
@@ -181,30 +211,66 @@ type FormProps = {
   onError: (message: string) => void;
 };
 
-function BreastfeedForm({ babyId, context, onDone, onError }: FormProps) {
+/**
+ * Lactancia en dos toques.
+ *
+ * Uno para empezar, otro para terminar, y nada más. El lado, las notas y la
+ * duración exacta se corrigen después desde el detalle: pedirlos en el momento
+ * es pedirle a alguien que suelte al bebé para rellenar un formulario.
+ */
+function BreastfeedTimer({ babyId, context, onDone, onError }: FormProps) {
   const t = useT();
-  const [side, setSide] = useState<BreastSide | undefined>(undefined);
-  const mutation = useCreateBreastfeed(context);
+  const { locale } = useI18n();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const abierta = useOpenBreastfeed(babyId);
+  const crear = useCreateBreastfeed(context);
+  const [cerrando, setCerrando] = useState(false);
+
+  const enCurso = abierta.data;
+
+  if (enCurso) {
+    return (
+      <Card>
+        <Text variant="subtitle">{t('quickLog.breastfeed')}</Text>
+        <Text>
+          {t('quickLog.feedRunning', { time: formatTime(enCurso.started_at, locale) })}
+        </Text>
+        <Button
+          label={t('quickLog.endFeed')}
+          loading={cerrando}
+          onPress={() => {
+            setCerrando(true);
+            endBreastfeed(enCurso.id)
+              .then(() => {
+                void queryClient.invalidateQueries({ queryKey: ['babies', babyId] });
+                onDone();
+              })
+              .catch((cause: Error) => onError(cause.message))
+              .finally(() => setCerrando(false));
+          }}
+        />
+        <Button
+          variant="ghost"
+          label={t('record.completeNow')}
+          onPress={() => router.push(`/record/breastfeed/${enCurso.id}`)}
+        />
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <Text variant="subtitle">{t('quickLog.breastfeed')}</Text>
-      <View style={styles.kinds}>
-        {(['left', 'right', 'both'] as const).map((value) => (
-          <Chip
-            key={value}
-            label={t(`breastfeed.${value}`)}
-            selected={side === value}
-            onPress={() => setSide(value)}
-          />
-        ))}
-      </View>
+      <Text variant="caption" color={colors.textSecondary}>
+        {t('quickLog.completeLater')}
+      </Text>
       <Button
-        label={t('common.save')}
-        loading={mutation.isPending}
+        label={t('quickLog.startFeed')}
+        loading={crear.isPending || abierta.isLoading}
         onPress={() => {
-          mutation.mutate(
-            { babyId, startedAt: new Date().toISOString(), side },
+          crear.mutate(
+            { babyId, startedAt: new Date().toISOString(), feedKind: 'breast' },
             { onSuccess: onDone, onError: (cause) => onError(cause.message) },
           );
         }}
@@ -213,9 +279,88 @@ function BreastfeedForm({ babyId, context, onDone, onError }: FormProps) {
   );
 }
 
+/**
+ * Biberón: fórmula o leche extraída.
+ *
+ * Mínimo real: la vía y la hora, que ya vienen puestas. Cantidad y marca son
+ * opcionales y no bloquean nada.
+ */
+function BottleForm({
+  feedKind,
+  babyId,
+  context,
+  onDone,
+  onError,
+}: FormProps & { feedKind: Exclude<FeedKind, 'breast'> }) {
+  const t = useT();
+  const ahora = useMemo(() => new Date(), []);
+  const [occurredAt, setOccurredAt] = useState(() => ahora.toISOString());
+  const [cantidad, setCantidad] = useState('');
+  const [marca, setMarca] = useState('');
+  const [detalle, setDetalle] = useState(false);
+  const mutation = useCreateBreastfeed(context);
+
+  const mililitros = Number.parseInt(cantidad.replace(/[^\d]/g, ''), 10);
+
+  return (
+    <Card>
+      <Text variant="subtitle">{t(`feedKind.${feedKind}` as 'feedKind.formula')}</Text>
+
+      <OccurredAtField
+        label={t('quickLog.occurredAt')}
+        value={occurredAt}
+        onChange={setOccurredAt}
+        now={ahora}
+      />
+
+      <Button
+        variant="ghost"
+        label={detalle ? t('common.close') : t('quickLog.moreOptions')}
+        onPress={() => setDetalle((v) => !v)}
+      />
+
+      {detalle ? (
+        <View style={styles.detalle}>
+          <Input
+            label={`${t('quickLog.amountMl')} · ${t('common.optional')}`}
+            value={cantidad}
+            onChangeText={setCantidad}
+            keyboardType="number-pad"
+          />
+          <Input
+            label={`${t('quickLog.brand')} · ${t('common.optional')}`}
+            value={marca}
+            onChangeText={setMarca}
+          />
+        </View>
+      ) : null}
+
+      <Button
+        label={t('quickLog.saveMinimum')}
+        loading={mutation.isPending}
+        onPress={() => {
+          mutation.mutate(
+            {
+              babyId,
+              startedAt: occurredAt,
+              feedKind,
+              amountMl: Number.isFinite(mililitros) && mililitros > 0 ? mililitros : undefined,
+              brand: marca.trim() ? marca.trim() : undefined,
+            },
+            { onSuccess: onDone, onError: (cause) => onError(cause.message) },
+          );
+        }}
+      />
+    </Card>
+  );
+}
+
+/** Comida. Mínimo: un alimento y la hora, que ya viene puesta. */
 function FoodForm({ babyId, context, onDone, onError }: FormProps) {
   const t = useT();
   const foods = useFoods();
+  const ahora = useMemo(() => new Date(), []);
+  const [occurredAt, setOccurredAt] = useState(() => ahora.toISOString());
   const [selected, setSelected] = useState<string[]>([]);
   const mutation = useCreateBabyFoodEntry(context);
 
@@ -241,6 +386,14 @@ function FoodForm({ babyId, context, onDone, onError }: FormProps) {
           ))}
         </View>
       </ScrollView>
+
+      <OccurredAtField
+        label={t('quickLog.occurredAt')}
+        value={occurredAt}
+        onChange={setOccurredAt}
+        now={ahora}
+      />
+
       <Button
         label={t('common.save')}
         disabled={selected.length === 0}
@@ -249,7 +402,7 @@ function FoodForm({ babyId, context, onDone, onError }: FormProps) {
           mutation.mutate(
             {
               babyId,
-              occurredAt: new Date().toISOString(),
+              occurredAt,
               items: selected.map((foodId) => ({ foodId, isFirstExposure: false })),
             },
             { onSuccess: onDone, onError: (cause) => onError(cause.message) },
@@ -269,6 +422,8 @@ function FoodForm({ babyId, context, onDone, onError }: FormProps) {
  */
 function DiaperForm({ babyId, context, onDone, onError }: FormProps) {
   const t = useT();
+  const ahora = useMemo(() => new Date(), []);
+  const [occurredAt, setOccurredAt] = useState(() => ahora.toISOString());
   const [type, setType] = useState<DiaperType | null>(null);
   const [detalle, setDetalle] = useState(false);
   const [amount, setAmount] = useState<'scant' | 'moderate' | 'large' | undefined>(undefined);
@@ -295,6 +450,13 @@ function DiaperForm({ babyId, context, onDone, onError }: FormProps) {
           />
         ))}
       </View>
+
+      <OccurredAtField
+        label={t('quickLog.occurredAt')}
+        value={occurredAt}
+        onChange={setOccurredAt}
+        now={ahora}
+      />
 
       {esDeposicion ? (
         <Button
@@ -341,7 +503,7 @@ function DiaperForm({ babyId, context, onDone, onError }: FormProps) {
       ) : null}
 
       <Button
-        label={t('common.save')}
+        label={t('quickLog.saveMinimum')}
         disabled={!type}
         loading={saving}
         onPress={() => {
@@ -350,7 +512,7 @@ function DiaperForm({ babyId, context, onDone, onError }: FormProps) {
           createDiaperEvent(
             {
               babyId,
-              occurredAt: new Date().toISOString(),
+              occurredAt,
               diaperType: type,
               stoolAmount: esDeposicion ? amount : undefined,
               mucus: esDeposicion && mucus ? true : undefined,
@@ -379,6 +541,9 @@ function DiaperForm({ babyId, context, onDone, onError }: FormProps) {
  */
 function SymptomForm({ babyId, context, onDone, onError }: FormProps) {
   const t = useT();
+  const router = useRouter();
+  const ahora = useMemo(() => new Date(), []);
+  const [occurredAt, setOccurredAt] = useState(() => ahora.toISOString());
   const [symptomType, setSymptomType] = useState<string | null>(null);
   const [severity, setSeverity] = useState<SymptomSeverity | undefined>(undefined);
   // Id del síntoma recién guardado: con él se ofrece el recordatorio y se
@@ -400,6 +565,14 @@ function SymptomForm({ babyId, context, onDone, onError }: FormProps) {
         <Card>
           <Text variant="subtitle">{t('common.photos')}</Text>
           <MediaStrip entityType="symptom" entityId={guardado} category="skin" />
+          <Text variant="caption" color={colors.textSecondary}>
+            {t('quickLog.savedComplete')}
+          </Text>
+          <Button
+            variant="secondary"
+            label={t('record.completeNow')}
+            onPress={() => router.push(`/record/symptom/${guardado}`)}
+          />
           <Button label={t('common.done')} onPress={onDone} />
         </Card>
       </View>
@@ -422,6 +595,13 @@ function SymptomForm({ babyId, context, onDone, onError }: FormProps) {
         ))}
       </View>
 
+      <OccurredAtField
+        label={t('quickLog.occurredAt')}
+        value={occurredAt}
+        onChange={setOccurredAt}
+        now={ahora}
+      />
+
       <Text variant="caption" color={colors.textSecondary}>
         {t('health.severity')} · {t('common.optional')}
       </Text>
@@ -437,13 +617,13 @@ function SymptomForm({ babyId, context, onDone, onError }: FormProps) {
       </View>
 
       <Button
-        label={t('common.save')}
+        label={t('quickLog.saveMinimum')}
         disabled={!symptomType}
         loading={mutation.isPending}
         onPress={() => {
           if (!symptomType) return;
           mutation.mutate(
-            { babyId, symptomType, startedAt: new Date().toISOString(), severity },
+            { babyId, symptomType, startedAt: occurredAt, severity },
             {
               onSuccess: (symptom) => setGuardado(symptom.id),
               onError: (cause) => onError(cause.message),
@@ -457,6 +637,8 @@ function SymptomForm({ babyId, context, onDone, onError }: FormProps) {
 
 function MedicationForm({ babyId, context, onDone, onError }: FormProps) {
   const t = useT();
+  const ahora = useMemo(() => new Date(), []);
+  const [occurredAt, setOccurredAt] = useState(() => ahora.toISOString());
   const [name, setName] = useState('');
   const [doseText, setDoseText] = useState('');
   const [saving, setSaving] = useState(false);
@@ -470,8 +652,16 @@ function MedicationForm({ babyId, context, onDone, onError }: FormProps) {
       </Text>
       {/* Texto libre: AliApp nunca calcula ni sugiere una dosis (§10). */}
       <Input label={t('quickLog.dose')} value={doseText} onChangeText={setDoseText} />
+
+      <OccurredAtField
+        label={t('quickLog.occurredAt')}
+        value={occurredAt}
+        onChange={setOccurredAt}
+        now={ahora}
+      />
+
       <Button
-        label={t('common.save')}
+        label={t('quickLog.saveMinimum')}
         disabled={name.trim().length === 0}
         loading={saving}
         onPress={() => {
@@ -481,7 +671,7 @@ function MedicationForm({ babyId, context, onDone, onError }: FormProps) {
               babyId,
               name: name.trim(),
               doseText: doseText.trim() ? doseText.trim() : undefined,
-              occurredAt: new Date().toISOString(),
+              occurredAt,
             },
             context,
           )

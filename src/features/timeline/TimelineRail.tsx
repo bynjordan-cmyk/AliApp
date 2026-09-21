@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
+  Button,
   Text,
   colors,
   radius,
@@ -61,6 +63,7 @@ export function TimelineRail({
 }) {
   const { locale, t } = useI18n();
   const { nameForKey } = useFoodNames();
+  const router = useRouter();
   const [abierto, setAbierto] = useState<string | null>(null);
 
   return (
@@ -81,6 +84,7 @@ export function TimelineRail({
               detalles={timelineDetails(item, t, nameForKey)}
               ultimo={index === day.items.length - 1}
               expandido={abierto === `${item.type}-${item.id}`}
+              onOpen={() => router.push(`/record/${item.type}/${item.id}`)}
               onToggle={
                 expandable
                   ? () =>
@@ -106,6 +110,7 @@ function TimelineNode({
   ultimo,
   expandido,
   onToggle,
+  onOpen,
 }: {
   item: TimelineItem;
   hora: string;
@@ -115,9 +120,13 @@ function TimelineNode({
   ultimo: boolean;
   expandido: boolean;
   onToggle?: () => void;
+  onOpen?: () => void;
 }) {
+  const { t } = useI18n();
   const tone = surfaces[TONE_BY_TYPE[item.type]];
   const entidad = MEDIA_ENTITY_BY_TYPE[item.type];
+  // Sello discreto de transparencia: alguien anotó mejor lo que pasó.
+  const editado = typeof item.metadata.editedAt === 'string';
 
   const contenido = (
     <View style={styles.row}>
@@ -142,6 +151,12 @@ function TimelineNode({
           </Text>
         ) : null}
 
+        {editado ? (
+          <Text variant="caption" color={colors.textSecondary}>
+            {t('record.edited')}
+          </Text>
+        ) : null}
+
         {expandido ? (
           <View style={styles.detalle}>
             {detalles.map((detalle) => (
@@ -154,6 +169,11 @@ function TimelineNode({
             ))}
 
             {entidad ? <MediaStrip entityType={entidad} entityId={item.id} /> : null}
+
+            {/* Corregir algo no debe obligar a ir a otra sección (§5). */}
+            {onOpen ? (
+              <Button variant="secondary" label={t('common.edit')} onPress={onOpen} />
+            ) : null}
           </View>
         ) : null}
       </View>

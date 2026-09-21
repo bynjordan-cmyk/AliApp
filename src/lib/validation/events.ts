@@ -35,19 +35,33 @@ export const caregiverFoodEntrySchema = z.object({
   notes: optionalNotesSchema,
 });
 
+/**
+ * Toma de leche: pecho, fórmula o leche extraída.
+ *
+ * El mínimo es la vía y la hora. Cantidad, marca y hora de fin se pueden
+ * completar después, desde el detalle del registro (§15).
+ */
 export const breastfeedSchema = z
   .object({
     babyId: uuidSchema,
     startedAt: occurredAtSchema,
     endedAt: occurredAtSchema.optional(),
+    feedKind: z.enum(['breast', 'formula', 'pumped_milk']).default('breast'),
     side: z.enum(['left', 'right', 'both']).optional(),
+    /** Cantidad observada. AliApp nunca sugiere cuánto debe tomar un bebé (§10). */
+    amountMl: z.number().int().min(1).max(1000).optional(),
+    brand: z.string().trim().max(120).optional(),
     feedingParentProfileId: uuidSchema.optional(),
     notes: optionalNotesSchema,
   })
   .refine(
     (value) => !value.endedAt || new Date(value.endedAt) >= new Date(value.startedAt),
     { message: 'La toma no puede terminar antes de empezar', path: ['endedAt'] },
-  );
+  )
+  .refine((value) => value.feedKind === 'breast' || !value.side, {
+    message: 'El lado solo se registra en una toma de pecho',
+    path: ['side'],
+  });
 
 /**
  * Pañal. Todo el detalle es opcional y descriptivo: describe lo observado sin

@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { Divider, EmptyState, ListItem, Text, colors, eventColors, spacing } from '@/design-system';
@@ -25,6 +26,7 @@ const TINT_BY_TYPE: Record<TimelineItemType, string> = {
 export function TimelineList({ days }: { days: TimelineDay[] }) {
   const { locale, t } = useI18n();
   const { nameForKey } = useFoodNames();
+  const router = useRouter();
 
   if (days.length === 0) {
     return <EmptyState title={t('common.empty')} description={t('timeline.emptyDay')} />;
@@ -45,6 +47,7 @@ export function TimelineList({ days }: { days: TimelineDay[] }) {
               subtitle={timelineSubtitle(item, t, nameForKey) ?? undefined}
               meta={formatTime(item.occurredAt, locale)}
               tint={TINT_BY_TYPE[item.type]}
+              onPress={() => router.push(`/record/${item.type}/${item.id}`)}
             />
           ))}
         </View>

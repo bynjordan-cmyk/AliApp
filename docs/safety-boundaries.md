@@ -50,3 +50,53 @@ aparte, como documento de la familia.
 `insufficient_data`, `under_observation`, `temporally_consistent`,
 `inconsistent` describen **consistencia temporal observada**, no probabilidad
 clínica. Su redacción visible debe mantenerse descriptiva.
+
+## Lectura de etiquetas
+
+Escanear una etiqueta compara **texto con una lista que hizo una familia**. No
+es un análisis del producto: AliApp no sabe qué lleva dentro un envase, solo qué
+pone en la foto que le han dado.
+
+Frases válidas:
+
+- «Detectamos: leche en polvo.»
+- «Caseinato coincide con un alimento marcado como Evitar.»
+- «Ninguno de los ingredientes leídos coincide con un alimento marcado como
+  Evitar.»
+
+Frases prohibidas, también aquí:
+
+- «Este alimento es seguro.»
+- «Puedes dárselo.»
+- «No contiene alérgenos.»
+
+Dos reglas de pantalla que no se negocian:
+
+1. El **texto original detectado** se muestra siempre, tal cual se leyó.
+2. El aviso **«Verifica también la etiqueta original del producto.»** está
+   siempre visible, haya coincidencias o no.
+
+La ausencia de coincidencias significa exactamente una cosa: ninguna palabra
+leída coincide con la lista de esa familia. No dice nada del producto, y el
+texto en pantalla lo dice con esas palabras (`label.noMatchesHint`).
+
+Mientras el OCR real no esté configurado funciona un lector de ejemplo, y la
+pantalla lo advierte (`label.mockNotice`): nadie debe confundir una
+demostración con la lectura de su propia foto.
+
+## Correcciones
+
+Un registro se puede corregir entero, incluida la hora en que ocurrió. Eso no
+es una laguna de seguridad: es lo que permite que el historial cuente lo que
+pasó de verdad.
+
+Lo que la base garantiza:
+
+- `created_at` y `created_by` no se editan nunca,
+- cada corrección deja una fila en `event_revisions`, escrita por un trigger y
+  no por el cliente,
+- un borrado lógico se guarda como borrado, no como edición,
+- quién puede corregir qué lo sigue decidiendo `app.can_edit_event`.
+
+La marca visible es discreta —«Editado»— y nunca tiene tono de error. Nadie
+registra perfecto a las cuatro de la mañana.

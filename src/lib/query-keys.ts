@@ -34,4 +34,8 @@ export const queryKeys = {
   report: (babyId: string, from: string, to: string) =>
     ['babies', babyId, 'report', from, to] as const,
   media: (entityType: string, entityId: string) => ['media', entityType, entityId] as const,
+
+  /** Detalle de un registro concreto y su historial de correcciones. */
+  record: (type: string, id: string) => ['records', type, id] as const,
+  recordRevisions: (type: string, id: string) => ['records', type, id, 'revisions'] as const,
 } as const;
