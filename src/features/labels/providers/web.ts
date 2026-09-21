@@ -1,8 +1,8 @@
 import { createWorker, type Worker } from 'tesseract.js';
 
+import { LabelScanError, classifyOcrError } from '../ocr-errors';
 import { normalizeOcrPayload, type RawOcrPayload } from '../ocr-normalize';
 import {
-  LabelOcrUnavailableError,
   type LabelOcrImage,
   type LabelOcrProgress,
   type LabelOcrProvider,
@@ -71,15 +71,20 @@ async function getWorker(onProgress?: LabelOcrProgress): Promise<Worker> {
       // `Content-Encoding: gzip` haría que el navegador los descomprimiera y
       // tesseract recibiría bytes crudos donde espera un gzip.
       gzip: ASSET_BASE !== null ? false : undefined,
+      // Los datos de idioma se guardan en IndexedDB tras la primera lectura.
+      // Es lo que hace que el segundo escaneo sea visiblemente más rápido,
+      // incluso después de recargar la página.
+      cacheMethod: 'write',
       logger: (mensaje: { status: string; progress: number }) => {
         // La descarga del motor es la mitad de la espera de la primera vez.
         if (mensaje.status === 'recognizing text') return;
         onProgress?.(Math.min(0.5, mensaje.progress * 0.5));
       },
     }).catch((cause: unknown) => {
-      // Un fallo al cargar no debe dejar el worker envenenado para siempre.
+      // Un fallo al cargar no debe dejar el worker envenenado para siempre:
+      // se olvida para que el siguiente intento vuelva a probar de cero.
       workerPromise = null;
-      throw cause;
+      throw new LabelScanError('engine_load_failed', (cause as Error)?.message);
     });
   }
 
@@ -101,18 +106,26 @@ export const webLabelOcrProvider: LabelOcrProvider = {
 
   async recognize(image: LabelOcrImage, onProgress?: LabelOcrProgress): Promise<LabelOcrResult> {
     if (!browserSupportsWasm()) {
-      throw new LabelOcrUnavailableError('el navegador no admite WebAssembly');
+      throw new LabelScanError('engine_load_failed', 'el navegador no admite WebAssembly');
     }
 
     const worker = await getWorker(onProgress);
 
-    const { data } = await worker.recognize(
-      image.uri,
-      {},
-      // Se piden los bloques además del texto: dan las líneas en su orden real,
-      // que es mucho mejor materia prima para trocear ingredientes.
-      { text: true, blocks: true },
-    );
+    let data;
+    try {
+      ({ data } = await worker.recognize(
+        image.uri,
+        {},
+        // Se piden los bloques además del texto: dan las líneas en su orden
+        // real, mucho mejor materia prima para trocear ingredientes.
+        { text: true, blocks: true },
+      ));
+    } catch (cause) {
+      // El worker se ha roto leyendo. Se descarta para que el reintento
+      // arranque uno limpio en lugar de insistir con uno muerto.
+      workerPromise = null;
+      throw new LabelScanError(classifyOcrError(cause), (cause as Error)?.message);
+    }
 
     onProgress?.(1);
 

@@ -101,6 +101,41 @@ Con `.traineddata.gz` había una trampa fina: un servidor que responda con
 entonces tesseract.js recibe bytes crudos donde espera un gzip y falla sin
 decir por qué. Con el fichero plano no hay ambigüedad posible.
 
+### Caché
+
+El worker se reutiliza dentro de la sesión (una variable de módulo), y los
+datos de idioma se guardan en **IndexedDB** tras la primera lectura
+(`cacheMethod: 'write'`). Eso es lo que hace que la segunda etiqueta se lea
+mucho más rápido, incluso después de recargar la página.
+
+Los assets de `/ocr` se sirven con `Cache-Control: public, max-age=2592000`
+(30 días), configurado en `vercel.json`. `manifest.json` queda fuera de esa
+caché a propósito: es la pieza que delata una versión desfasada.
+
+Al actualizar tesseract.js hay que ejecutar `npm run ocr:assets`; durante 30
+días un navegador que ya tuviera los anteriores seguirá con ellos hasta que la
+caché expire o alguien fuerce una recarga.
+
+### Fallos, y qué se cuenta de cada uno
+
+`ocr-errors.ts` clasifica todo lo que puede salir mal en seis causas, y cada
+una tiene un texto que explica el qué y ofrece **una salida que existe en la
+pantalla**. Nunca se enseña el mensaje técnico de una excepción.
+
+| Causa | De dónde sale |
+| --- | --- |
+| `permission_denied` | `NotAllowedError` / `SecurityError` de `getUserMedia` |
+| `camera_unavailable` | el resto de fallos de cámara, o navegador sin la API |
+| `engine_load_failed` | el motor no se descargó o no arrancó |
+| `worker_failed` | el motor arrancó y se rompió leyendo |
+| `unreadable_image` | se leyó y no salió absolutamente nada |
+| `no_text` | salió algo, pero no llega a texto aprovechable |
+
+La distinción entre las dos últimas y entre las dos del motor no es cosmética:
+decide qué se ofrece. Reintentar la misma foto tiene sentido si falló el motor;
+si la foto es ilegible, repetirla no arregla nada y la pista dice que se
+repita la foto.
+
 El `manifest.json` existe para un fallo muy concreto: actualizar tesseract.js y
 olvidar volver a copiar el motor. `npm run test:ocr:web` compara la versión del
 manifiesto con la instalada y se niega a pasar si no coinciden.
@@ -173,6 +208,17 @@ ALIAPP_PLAYWRIGHT_PATH=… ALIAPP_CHROMIUM_PATH=… npm run test:ocr:web
 ```
 
 Y si `public/ocr` no existe, lo dice y manda ejecutar `npm run ocr:assets`.
+
+## Comprobación de lo que se publica
+
+```bash
+npx expo export --platform web --output-dir dist
+node scripts/check-bundle-purity.mjs dist web
+```
+
+Comprueba sobre el fichero exportado —no sobre la intención— que el fixture de
+pruebas **no viaja en ningún bundle**, que cada plataforma lleva su motor y
+solo el suyo, y que el motor de OCR va dentro del export.
 
 El fixture (`providers/fixture.ts`) queda **solo para pruebas**. Si apareciera
 en un dispositivo, la pantalla lo diría con todas las letras.

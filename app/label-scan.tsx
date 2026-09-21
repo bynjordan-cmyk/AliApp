@@ -21,6 +21,12 @@ import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
 import { LabelCapture } from '@/features/labels/LabelCapture';
 import { normalizeIngredient, parseIngredientList } from '@/features/labels/ingredients';
 import {
+  FAILURE_COPY,
+  classifyOcrError,
+  isRetryable,
+  type LabelScanFailure,
+} from '@/features/labels/ocr-errors';
+import {
   buildLabelScanResult,
   describeDetected,
   type LabelScanFinding,
@@ -82,7 +88,9 @@ export default function LabelScanScreen() {
   const [descartados, setDescartados] = useState<string[]>([]);
   const [nuevo, setNuevo] = useState('');
   const [resultado, setResultado] = useState<LabelScanResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Un solo estado de error, y tipado: la pantalla nunca enseña el mensaje
+  // técnico de una excepción.
+  const [fallo, setFallo] = useState<LabelScanFailure | null>(null);
 
   useEffect(() => {
     let vivo = true;
@@ -97,13 +105,15 @@ export default function LabelScanScreen() {
   const leer = async (origen: LabelOcrImage) => {
     setPaso('leyendo');
     setProgreso(0);
-    setError(null);
+    setFallo(null);
 
     try {
       const salida = await provider.recognize(origen, setProgreso);
 
+      // Se leyó, pero no salió nada aprovechable. No es lo mismo que un fallo
+      // del motor, y la pista que se da tampoco.
       if (!hasUsableText(salida)) {
-        setError(t('label.unreadable'));
+        setFallo(salida.rawText.trim().length === 0 ? 'unreadable_image' : 'no_text');
         setPaso('revisar');
         return;
       }
@@ -112,7 +122,7 @@ export default function LabelScanScreen() {
       setTexto(salida.rawText);
       setPaso('texto');
     } catch (cause) {
-      setError((cause as Error).message);
+      setFallo(classifyOcrError(cause));
       setPaso('revisar');
     }
   };
@@ -121,13 +131,13 @@ export default function LabelScanScreen() {
     const detectados = parseIngredientList(texto);
 
     if (detectados.length === 0) {
-      setError(t('label.unreadable'));
+      setFallo('no_text');
       return;
     }
 
     setIngredientes(detectados);
     setDescartados([]);
-    setError(null);
+    setFallo(null);
     setPaso('ingredientes');
   };
 
@@ -153,7 +163,7 @@ export default function LabelScanScreen() {
     setIngredientes([]);
     setDescartados([]);
     setResultado(null);
-    setError(null);
+    setFallo(null);
     setProgreso(0);
   };
 
@@ -185,19 +195,26 @@ export default function LabelScanScreen() {
           </Card>
         ) : null}
 
-        {error ? (
-          <Text variant="caption" color={colors.error} accessibilityRole="alert">
-            {error}
-          </Text>
+        {/* Un fallo se cuenta con su causa y con una salida que existe. */}
+        {fallo ? (
+          <Card tone="highlight">
+            <Text variant="bodyStrong" color={colors.error} accessibilityRole="alert">
+              {t(FAILURE_COPY[fallo].title)}
+            </Text>
+            <Text variant="caption" color={colors.textSecondary}>
+              {t(FAILURE_COPY[fallo].hint)}
+            </Text>
+          </Card>
         ) : null}
 
         {paso === 'capturar' ? (
           <LabelCapture
             onCaptured={(capturada) => {
               setImagen(capturada);
-              setError(null);
+              setFallo(null);
               setPaso('revisar');
             }}
+            onFailure={setFallo}
           />
         ) : null}
 
@@ -205,7 +222,10 @@ export default function LabelScanScreen() {
         {paso === 'revisar' && imagen ? (
           <Card>
             <Image source={{ uri: imagen.uri }} style={styles.preview} resizeMode="contain" />
-            <Button label={t('label.usePhoto')} onPress={() => void leer(imagen)} />
+            <Button
+              label={fallo && isRetryable(fallo) ? t('label.retryRead') : t('label.usePhoto')}
+              onPress={() => void leer(imagen)}
+            />
             <Button variant="secondary" label={t('label.retake')} onPress={empezarDeNuevo} />
           </Card>
         ) : null}

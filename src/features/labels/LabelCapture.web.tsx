@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Card, Text, colors, radius, spacing } from '@/design-system';
 import { useI18n } from '@/lib/i18n';
 
+import { classifyCameraError, type LabelScanFailure } from './ocr-errors';
 import type { LabelOcrImage } from './ocr-types';
 
 /**
@@ -28,11 +29,13 @@ import type { LabelOcrImage } from './ocr-types';
 
 export type LabelCaptureProps = {
   onCaptured: (image: LabelOcrImage) => void;
+  /** La pantalla decide cómo contar el fallo; aquí solo se clasifica. */
+  onFailure: (kind: LabelScanFailure) => void;
 };
 
 const ANCHO_IDEAL = 1920;
 
-export function LabelCapture({ onCaptured }: LabelCaptureProps) {
+export function LabelCapture({ onCaptured, onFailure }: LabelCaptureProps) {
   const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -56,7 +59,8 @@ export function LabelCapture({ onCaptured }: LabelCaptureProps) {
 
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error('sin getUserMedia');
+        // Sin API de cámara: no es un permiso denegado, es que no la hay.
+        throw Object.assign(new Error('sin getUserMedia'), { name: 'NotFoundError' });
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -78,10 +82,12 @@ export function LabelCapture({ onCaptured }: LabelCaptureProps) {
           void videoRef.current.play();
         }
       });
-    } catch {
+    } catch (cause) {
       // Permiso denegado, sin cámara, o un navegador que no lo admite: no es
-      // un callejón sin salida, es el otro camino.
+      // un callejón sin salida, es el otro camino. Se distingue la causa para
+      // que el mensaje diga algo útil y no un "no se pudo" genérico.
       setAviso(t('label.cameraFallback'));
+      onFailure(classifyCameraError(cause));
     } finally {
       setAbriendo(false);
     }

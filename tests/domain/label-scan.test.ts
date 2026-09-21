@@ -9,6 +9,14 @@ import {
   describeDetected,
   hasMarkedMatches,
 } from '@/features/labels/label-scan';
+import {
+  FAILURE_COPY,
+  LabelScanError,
+  classifyCameraError,
+  classifyOcrError,
+  isRetryable,
+  type LabelScanFailure,
+} from '@/features/labels/ocr-errors';
 import { normalizeOcrPayload, hasUsableText } from '@/features/labels/ocr-normalize';
 import { LABEL_FIXTURE_TEXT, fixtureLabelOcrProvider } from '@/features/labels/providers/fixture';
 import { isSafeStatement } from '@/lib/safety';
@@ -277,5 +285,72 @@ describe('fixture de laboratorio', () => {
     expect(lectura.rawText).toBe(LABEL_FIXTURE_TEXT);
     expect(describeDetected(resultado).length).toBeGreaterThan(0);
     expect(resultado.avoid.length).toBeGreaterThan(0);
+  });
+});
+
+describe('qué se le cuenta a una persona cuando algo falla', () => {
+  it('distingue permiso denegado de cámara no disponible', () => {
+    const denegado = Object.assign(new Error('x'), { name: 'NotAllowedError' });
+    const sinCamara = Object.assign(new Error('x'), { name: 'NotFoundError' });
+    const ocupada = Object.assign(new Error('x'), { name: 'NotReadableError' });
+
+    expect(classifyCameraError(denegado)).toBe('permission_denied');
+    expect(classifyCameraError(sinCamara)).toBe('camera_unavailable');
+    expect(classifyCameraError(ocupada)).toBe('camera_unavailable');
+  });
+
+  it('un fallo al cargar el motor no se confunde con uno del worker', () => {
+    expect(classifyOcrError(new Error('Failed to load TesseractCore'))).toBe(
+      'engine_load_failed',
+    );
+    expect(classifyOcrError(new Error('Failed to fetch'))).toBe('engine_load_failed');
+    expect(classifyOcrError(new Error('algo raro a mitad'))).toBe('worker_failed');
+  });
+
+  it('un error ya clasificado se respeta tal cual', () => {
+    expect(classifyOcrError(new LabelScanError('no_text'))).toBe('no_text');
+  });
+
+  it('solo se ofrece reintentar donde reintentar tiene sentido', () => {
+    expect(isRetryable('engine_load_failed')).toBe(true);
+    expect(isRetryable('worker_failed')).toBe(true);
+    // Repetir la lectura de una foto ilegible da exactamente lo mismo.
+    expect(isRetryable('unreadable_image')).toBe(false);
+    expect(isRetryable('permission_denied')).toBe(false);
+  });
+
+  it('los seis fallos tienen texto en los dos idiomas', () => {
+    const fallos: LabelScanFailure[] = [
+      'camera_unavailable',
+      'permission_denied',
+      'engine_load_failed',
+      'worker_failed',
+      'unreadable_image',
+      'no_text',
+    ];
+
+    for (const fallo of fallos) {
+      for (const idioma of ['es', 'en'] as const) {
+        const titulo = translate(idioma, FAILURE_COPY[fallo].title);
+        const pista = translate(idioma, FAILURE_COPY[fallo].hint);
+
+        expect(titulo.length).toBeGreaterThan(0);
+        expect(pista.length).toBeGreaterThan(0);
+        // Ni el texto de un fallo puede cruzar los límites de seguridad.
+        expect(isSafeStatement(titulo)).toBe(true);
+        expect(isSafeStatement(pista)).toBe(true);
+      }
+    }
+  });
+
+  it('ningún mensaje de fallo enseña jerga técnica', () => {
+    const jerga = ['tesseract', 'wasm', 'worker', 'undefined', 'error:'];
+
+    for (const copia of Object.values(FAILURE_COPY)) {
+      const texto = translate('es', copia.title).toLowerCase();
+      for (const palabra of jerga) {
+        expect(texto).not.toContain(palabra);
+      }
+    }
   });
 });

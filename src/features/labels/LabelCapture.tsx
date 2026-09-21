@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Card, Text, colors, spacing } from '@/design-system';
 import { useI18n } from '@/lib/i18n';
 
+import type { LabelScanFailure } from './ocr-errors';
 import type { LabelOcrImage } from './ocr-types';
 
 /**
@@ -23,9 +24,11 @@ import type { LabelOcrImage } from './ocr-types';
 
 export type LabelCaptureProps = {
   onCaptured: (image: LabelOcrImage) => void;
+  /** La pantalla decide cómo contar el fallo; aquí solo se clasifica. */
+  onFailure: (kind: LabelScanFailure) => void;
 };
 
-export function LabelCapture({ onCaptured }: LabelCaptureProps) {
+export function LabelCapture({ onCaptured, onFailure }: LabelCaptureProps) {
   const { t } = useI18n();
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -39,6 +42,7 @@ export function LabelCapture({ onCaptured }: LabelCaptureProps) {
 
     if (!permiso.granted) {
       setAviso(t('media.permissionNeeded'));
+      onFailure('permission_denied');
       return;
     }
 

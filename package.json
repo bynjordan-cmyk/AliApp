@@ -20,7 +20,8 @@
     "db:types": "node scripts/gen-db-types.mjs",
     "format": "prettier --write .",
     "test:ocr:web": "node scripts/ocr-web-check.mjs",
-    "ocr:assets": "node scripts/prepare-ocr-assets.mjs"
+    "ocr:assets": "node scripts/prepare-ocr-assets.mjs",
+    "check:bundles": "node scripts/check-bundle-purity.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",
