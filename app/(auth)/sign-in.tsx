@@ -5,7 +5,16 @@ import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
 import { z } from 'zod';
 
-import { Input, PageHeader, Button, Card, Screen, Text, colors, spacing } from '@/design-system';
+import {
+  BrandLogo,
+  Input,
+  Button,
+  Card,
+  Screen,
+  Text,
+  colors,
+  spacing,
+} from '@/design-system';
 import { useSession } from '@/features/auth/SessionProvider';
 import { useT } from '@/lib/i18n';
 
@@ -46,7 +55,11 @@ export default function SignInScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <PageHeader title={t('auth.signInTitle')} subtitle={t('auth.signInSubtitle')} />
+        <BrandLogo variant="full" height={84} style={{ marginBottom: spacing.lg }} />
+        <Text variant="display" accessibilityRole="header">
+          {t('auth.signInTitle')}
+        </Text>
+        <Text color={colors.textSecondary}>{t('auth.signInSubtitle')}</Text>
       </View>
 
       <Card>
@@ -58,7 +71,6 @@ export default function SignInScreen() {
               <Input
                 error={fieldState.error ? t('common.invalidField') : undefined}
                 onBlur={field.onBlur}
-                placeholder={t('onboarding.householdName')}
                 label={t('onboarding.householdName')}
                 value={field.value}
                 onChangeText={field.onChange}
@@ -74,7 +86,6 @@ export default function SignInScreen() {
             <Input
               error={fieldState.error ? t('auth.invalidEmail') : undefined}
               onBlur={field.onBlur}
-              placeholder={t('auth.email')}
               label={t('auth.email')}
               autoCapitalize="none"
               autoComplete="email"
@@ -92,7 +103,6 @@ export default function SignInScreen() {
             <Input
               error={fieldState.error ? t('auth.invalidPassword') : undefined}
               onBlur={field.onBlur}
-              placeholder={t('auth.password')}
               label={t('auth.password')}
               secureTextEntry
               value={field.value}

@@ -1,13 +1,19 @@
-import { Ionicons } from '@expo/vector-icons';
+import type { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../tokens';
+import { colors, spacing } from '../tokens';
+import { BrandLogo } from './BrandLogo';
 import { Text } from './Text';
 
+/**
+ * Cabecera de pantalla: logotipo de marca y título.
+ *
+ * `icon` se mantiene por compatibilidad con las llamadas existentes, pero ya no
+ * se dibuja: la marca es el logotipo oficial, no un icono del sistema.
+ */
 export function PageHeader({
   title,
   subtitle,
-  icon = 'heart-outline',
 }: {
   title: string;
   subtitle?: string;
@@ -15,18 +21,8 @@ export function PageHeader({
 }) {
   return (
     <View style={styles.root}>
-      <View
-        style={styles.brand}
-        accessible={false}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <View style={styles.mark}>
-          <Ionicons name={icon} size={22} color={colors.brand} />
-        </View>
-        <Text variant="bodyStrong" color={colors.brand}>
-          AliApp<Text color={colors.accent}>.</Text>
-        </Text>
+      <View style={styles.brand}>
+        <BrandLogo height={30} />
       </View>
       <Text variant="display" accessibilityRole="header">
         {title}
@@ -38,13 +34,5 @@ export function PageHeader({
 
 const styles = StyleSheet.create({
   root: { gap: spacing.sm },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
-  mark: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    backgroundColor: colors.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  brand: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md },
 });
