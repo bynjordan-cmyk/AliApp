@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "AliApp",
+    "slug": "aliapp",
+    "version": "0.1.0",
+    "scheme": "aliapp",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FFFFFF",
+    "newArchEnabled": true,
+    "locales": {},
+    "extra": {
+      "defaultLocale": "es"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aliapp.app"
+    },
+    "android": {
+      "package": "com.aliapp.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

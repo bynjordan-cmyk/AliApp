@@ -1,0 +1,105 @@
+import { z } from 'zod';
+
+import { nonEmptyText, occurredAtSchema, optionalNotesSchema, uuidSchema } from './common';
+
+/**
+ * Esquemas de los formularios de registro.
+ *
+ * Regla de producto (§15): el mínimo obligatorio es diminuto y todo lo
+ * clínico/contextual es opcional, para que una toma se registre en segundos.
+ *
+ * Regla de seguridad (§27): un síntoma NUNCA lleva el alimento sospechoso.
+ * Relacionar síntoma y exposición es un paso posterior y explícito.
+ */
+
+export const foodEntryItemSchema = z.object({
+  foodId: uuidSchema,
+  amountText: z.string().trim().max(120).optional(),
+  isFirstExposure: z.boolean().default(false),
+});
+
+export const babyFoodEntrySchema = z.object({
+  babyId: uuidSchema,
+  occurredAt: occurredAtSchema,
+  mealType: z.enum(['breakfast', 'lunch', 'snack', 'dinner', 'other']).optional(),
+  items: z.array(foodEntryItemSchema).min(1, 'Añade al menos un alimento'),
+  notes: optionalNotesSchema,
+});
+
+export const caregiverFoodEntrySchema = z.object({
+  caregiverProfileId: uuidSchema,
+  babyId: uuidSchema.optional(),
+  occurredAt: occurredAtSchema,
+  mealType: z.enum(['breakfast', 'lunch', 'snack', 'dinner', 'other']).optional(),
+  items: z.array(foodEntryItemSchema).min(1, 'Añade al menos un alimento'),
+  notes: optionalNotesSchema,
+});
+
+export const breastfeedSchema = z
+  .object({
+    babyId: uuidSchema,
+    startedAt: occurredAtSchema,
+    endedAt: occurredAtSchema.optional(),
+    side: z.enum(['left', 'right', 'both']).optional(),
+    feedingParentProfileId: uuidSchema.optional(),
+    notes: optionalNotesSchema,
+  })
+  .refine(
+    (value) => !value.endedAt || new Date(value.endedAt) >= new Date(value.startedAt),
+    { message: 'La toma no puede terminar antes de empezar', path: ['endedAt'] },
+  );
+
+export const diaperEventSchema = z.object({
+  babyId: uuidSchema,
+  occurredAt: occurredAtSchema,
+  diaperType: z.enum(['urine', 'stool', 'both']),
+  stoolConsistency: z.string().trim().max(60).optional(),
+  stoolColor: z.string().trim().max(60).optional(),
+  mucus: z.boolean().optional(),
+  bloodObserved: z.boolean().optional(),
+  notes: optionalNotesSchema,
+});
+
+export const symptomSchema = z
+  .object({
+    babyId: uuidSchema,
+    symptomType: z
+      .string()
+      .regex(/^[a-z0-9_]+$/, 'Clave de síntoma no válida'),
+    startedAt: occurredAtSchema,
+    endedAt: occurredAtSchema.optional(),
+    /** Intensidad observada por la familia. No es una escala clínica. */
+    severity: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+    notes: optionalNotesSchema,
+  })
+  .refine(
+    (value) => !value.endedAt || new Date(value.endedAt) >= new Date(value.startedAt),
+    { message: 'El síntoma no puede terminar antes de empezar', path: ['endedAt'] },
+  );
+
+export const reactionEpisodeSchema = z.object({
+  babyId: uuidSchema,
+  startedAt: occurredAtSchema,
+  endedAt: occurredAtSchema.optional(),
+  status: z.enum(['open', 'resolved']).default('open'),
+  symptomIds: z.array(uuidSchema).default([]),
+  notes: optionalNotesSchema,
+});
+
+export const medicationEventSchema = z.object({
+  babyId: uuidSchema,
+  name: nonEmptyText(160),
+  // Texto libre escrito por la familia. AliApp nunca propone dosis (§10).
+  doseText: z.string().trim().max(120).optional(),
+  occurredAt: occurredAtSchema,
+  reasonText: z.string().trim().max(240).optional(),
+  notes: optionalNotesSchema,
+});
+
+export type BabyFoodEntryInput = z.infer<typeof babyFoodEntrySchema>;
+export type CaregiverFoodEntryInput = z.infer<typeof caregiverFoodEntrySchema>;
+export type BreastfeedInput = z.infer<typeof breastfeedSchema>;
+export type DiaperEventInput = z.infer<typeof diaperEventSchema>;
+export type SymptomInput = z.infer<typeof symptomSchema>;
+export type ReactionEpisodeInput = z.infer<typeof reactionEpisodeSchema>;
+export type MedicationEventInput = z.infer<typeof medicationEventSchema>;
