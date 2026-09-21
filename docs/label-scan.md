@@ -58,12 +58,21 @@ que solo devuelva texto suelto. Si no se leyó nada, no inventa nada.
 ## Web
 
 - Motor: **tesseract.js 7** sobre WebAssembly, idiomas `spa` + `eng`.
-- Cámara: `navigator.mediaDevices.getUserMedia` pidiendo la trasera
-  (`facingMode: environment`). Requiere HTTPS, que es como se sirve AliApp.
-- Respaldo: `<input type="file" accept="image/*" capture="environment">`,
-  ofrecido **siempre**, no solo cuando la cámara falla. En varios navegadores
-  móviles es lo que de verdad funciona, y en un ordenador es lo natural.
-- La cámara se apaga al salir de la pantalla.
+Tres caminos, y el orden en pantalla no es cosmético:
+
+1. **Cámara del sistema** (`<input type="file" capture="environment">`). La
+   recomendada en el móvil. La cámara de la página no tiene autoenfoque fiable
+   en Chrome de Android: una lista de ingredientes sale borrosa por mucho que
+   se acerque uno, y una lectura borrosa no sirve para nada. La aplicación de
+   cámara del teléfono enfoca, mide la luz y da la resolución entera.
+2. **Galería** (el mismo `<input>` **sin `capture`**). Para una foto o una
+   captura de pantalla que ya existe. Con `capture` puesto, Chrome en Android
+   abre la cámara y **nunca** llega a ofrecer la galería: durante un tiempo el
+   botón decía «elige una foto del dispositivo» y hacía lo contrario.
+3. **Cámara dentro de la página** (`getUserMedia`, `facingMode: environment`,
+   ancho ideal 2560, y autoenfoque continuo si el navegador lo admite). En un
+   ordenador es lo natural; en un móvil es el peor de los tres, y la pantalla
+   lo dice. Requiere HTTPS, que es como se sirve AliApp. Se apaga al salir.
 
 ### Privacidad
 
@@ -130,6 +139,18 @@ pantalla**. Nunca se enseña el mensaje técnico de una excepción.
 | `worker_failed` | el motor arrancó y se rompió leyendo |
 | `unreadable_image` | se leyó y no salió absolutamente nada |
 | `no_text` | salió algo, pero no llega a texto aprovechable |
+| `low_confidence` | salió texto de sobra y el motor no se fía de él |
+
+`low_confidence` merece su propio párrafo. El motor devuelve una confianza
+media por lectura, y separa los casos con holgura: **95** sobre una etiqueta
+limpia, **95** sobre una etiqueta con degradado, ruido, inclinación y JPEG malo
+que aun así se lee entera, y **37** sobre la foto de una pantalla con una tabla
+nutricional, donde devolvía páginas de símbolos. El corte va en **60**, en
+mitad del hueco.
+
+Sin esa puerta, la pantalla enseñaba la sopa como «texto detectado», que es
+justo lo que invita a darla por buena. No se ofrece reintentar: releer la misma
+foto devuelve la misma confusión, y lo que hay que cambiar es la foto.
 
 La distinción entre las dos últimas y entre las dos del motor no es cosmética:
 decide qué se ofrece. Reintentar la misma foto tiene sentido si falló el motor;
