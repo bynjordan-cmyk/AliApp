@@ -1,4 +1,4 @@
-import { StyleSheet, Text as RNText, type TextProps as RNTextProps } from 'react-native';
+import { Platform, StyleSheet, Text as RNText, type TextProps as RNTextProps } from 'react-native';
 
 import { colors, typography, type TypographyVariant } from '../tokens';
 
@@ -37,6 +37,6 @@ export function Text({
 }
 
 const styles = StyleSheet.create({
-  base: { includeFontPadding: false },
+  base: { includeFontPadding: false, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif' },
   center: { textAlign: 'center' },
 });

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -9,7 +10,6 @@ import {
   radius,
   spacing,
   touchTarget,
-  useLayout,
 } from '@/design-system';
 import { useT } from '@/lib/i18n';
 
@@ -23,7 +23,6 @@ import { useT } from '@/lib/i18n';
 export function QuickLogFab({ maxWidth = CONTENT_MAX_WIDTH }: { maxWidth?: number }) {
   const router = useRouter();
   const t = useT();
-  const { isWide } = useLayout();
 
   return (
     <View pointerEvents="box-none" style={styles.layer}>
@@ -33,16 +32,10 @@ export function QuickLogFab({ maxWidth = CONTENT_MAX_WIDTH }: { maxWidth?: numbe
           accessibilityLabel={t('today.quickLog')}
           accessibilityHint={t('quickLog.title')}
           onPress={() => router.push('/quick-log')}
-          style={({ pressed }) => [
-            styles.fab,
-            isWide && styles.fabWide,
-            pressed && styles.pressed,
-          ]}
+          style={({ pressed }) => [styles.fab, pressed && styles.pressed]}
         >
-          <Text variant="title" color={colors.textOnAccent}>
-            +
-          </Text>
-          <Text variant="caption" color={colors.textOnAccent}>
+          <Ionicons name="add" size={24} color={colors.textOnCoral} accessible={false} />
+          <Text variant="bodyStrong" color={colors.textOnCoral} style={{ flexShrink: 1 }}>
             {t('today.quickLog')}
           </Text>
         </Pressable>
@@ -62,10 +55,12 @@ const styles = StyleSheet.create({
   column: {
     width: '100%',
     alignItems: 'flex-end',
-    paddingRight: spacing.lg,
-    paddingBottom: spacing.xxl,
+    paddingRight: spacing.xl,
+    paddingBottom: spacing.lg,
   },
   fab: {
+    flexDirection: 'row',
+    maxWidth: '85%',
     minHeight: touchTarget.comfortable + spacing.md,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
@@ -73,9 +68,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xxs,
+    gap: spacing.sm,
     ...elevation.card,
   },
-  fabWide: { flexDirection: 'row', gap: spacing.sm },
   pressed: { opacity: 0.9 },
 });

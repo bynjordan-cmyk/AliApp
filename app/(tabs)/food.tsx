@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import {
+  QueryState,
+  PageHeader,
   Card,
   Chip,
   EmptyState,
@@ -35,6 +37,9 @@ export default function FoodScreen() {
   const board = useAllergenBoard(baby?.id ?? null);
   const foodNames = useFoodNames();
 
+  const visibleQuery =
+    tab === 'board' ? board : tab === 'breastfeeding' ? breastfeeds : foodEntries;
+
   if (!baby) {
     return (
       <Screen>
@@ -45,7 +50,7 @@ export default function FoodScreen() {
 
   return (
     <Screen>
-      <Text variant="display">{t('food.title')}</Text>
+      <PageHeader title={t('food.title')} icon="restaurant-outline" />
       <BabySelector />
 
       <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
@@ -67,80 +72,92 @@ export default function FoodScreen() {
         />
       </View>
 
-      {tab === 'baby' || tab === 'caregiver' ? (
-        <View style={{ gap: spacing.sm }}>
-          <SectionHeader
-            title={tab === 'baby' ? t('food.babyLog') : t('food.caregiverLog')}
-            subtitle={t('safety.notDiagnostic')}
-          />
-          {(foodEntries.data ?? [])
-            .filter((entry) =>
+      <QueryState
+        loading={visibleQuery.isLoading}
+        error={visibleQuery.isError}
+        onRetry={() => {
+          void visibleQuery.refetch();
+        }}
+      >
+        {tab === 'baby' || tab === 'caregiver' ? (
+          <View style={{ gap: spacing.sm }}>
+            <SectionHeader
+              title={tab === 'baby' ? t('food.babyLog') : t('food.caregiverLog')}
+              subtitle={t('safety.notDiagnostic')}
+            />
+            {(foodEntries.data ?? [])
+              .filter((entry) =>
+                tab === 'baby' ? entry.subject_type === 'baby' : entry.subject_type === 'caregiver',
+              )
+              .map((entry) => (
+                <ListItem
+                  key={entry.id}
+                  title={t('timeline.foodEntry')}
+                  subtitle={entry.notes ?? undefined}
+                  meta={`${formatDate(entry.occurred_at, locale)} · ${formatTime(entry.occurred_at, locale)}`}
+                  tint={eventColors.food}
+                />
+              ))}
+            {(foodEntries.data ?? []).filter((entry) =>
               tab === 'baby' ? entry.subject_type === 'baby' : entry.subject_type === 'caregiver',
-            )
-            .map((entry) => (
+            ).length === 0 ? (
+              <EmptyState title={t('common.empty')} />
+            ) : null}
+          </View>
+        ) : null}
+
+        {tab === 'breastfeeding' ? (
+          <View style={{ gap: spacing.sm }}>
+            <SectionHeader title={t('food.breastfeeding')} />
+            {(breastfeeds.data ?? []).map((row) => (
               <ListItem
-                key={entry.id}
-                title={t('timeline.foodEntry')}
-                subtitle={entry.notes ?? undefined}
-                meta={`${formatDate(entry.occurred_at, locale)} · ${formatTime(entry.occurred_at, locale)}`}
-                tint={eventColors.food}
+                key={row.id}
+                title={t('timeline.breastfeed')}
+                subtitle={row.side ?? undefined}
+                meta={formatTime(row.started_at, locale)}
+                tint={eventColors.breastfeed}
               />
             ))}
-          {(foodEntries.data ?? []).length === 0 ? (
-            <EmptyState title={t('common.empty')} />
-          ) : null}
-        </View>
-      ) : null}
+            {(breastfeeds.data ?? []).length === 0 ? (
+              <EmptyState title={t('common.empty')} />
+            ) : null}
+          </View>
+        ) : null}
 
-      {tab === 'breastfeeding' ? (
-        <View style={{ gap: spacing.sm }}>
-          <SectionHeader title={t('food.breastfeeding')} />
-          {(breastfeeds.data ?? []).map((row) => (
-            <ListItem
-              key={row.id}
-              title={t('timeline.breastfeed')}
-              subtitle={row.side ?? undefined}
-              meta={formatTime(row.started_at, locale)}
-              tint={eventColors.breastfeed}
-            />
-          ))}
-          {(breastfeeds.data ?? []).length === 0 ? <EmptyState title={t('common.empty')} /> : null}
-        </View>
-      ) : null}
-
-      {tab === 'board' ? (
-        <View style={{ gap: spacing.md }}>
-          <SectionHeader title={t('food.allergenBoard')} subtitle={t('safety.limitedData')} />
-          {board.groups
-            .filter((group) => group.items.length > 0)
-            .map((group) => (
-              <Card key={group.status}>
-                <Text variant="subtitle">{t(`foodStatus.${group.status}` as const)}</Text>
-                {group.items.map((item) => (
-                  <ListItem
-                    key={`${group.status}-${item.food_id}`}
-                    title={
-                      foodNames.byId.get(item.food_id ?? '') ??
-                      item.canonical_name ??
-                      item.canonical_key ??
-                      ''
-                    }
-                    subtitle={`${t('foodStatus.exposures')}: ${item.exposure_count ?? 0}`}
-                    meta={
-                      item.last_exposure_at
-                        ? formatDate(item.last_exposure_at, locale)
-                        : undefined
-                    }
-                    tint={statusTint(group.status)}
-                  />
-                ))}
-              </Card>
-            ))}
-          <Text variant="caption" color={colors.textSecondary}>
-            {t('safety.consultProfessional')}
-          </Text>
-        </View>
-      ) : null}
+        {tab === 'board' ? (
+          <View style={{ gap: spacing.md }}>
+            <SectionHeader title={t('food.allergenBoard')} subtitle={t('safety.limitedData')} />
+            {board.groups
+              .filter((group) => group.items.length > 0)
+              .map((group) => (
+                <Card key={group.status}>
+                  <Text variant="subtitle">{t(`foodStatus.${group.status}` as const)}</Text>
+                  {group.items.map((item) => (
+                    <ListItem
+                      key={`${group.status}-${item.food_id}`}
+                      title={
+                        foodNames.byId.get(item.food_id ?? '') ??
+                        item.canonical_name ??
+                        item.canonical_key ??
+                        ''
+                      }
+                      subtitle={`${t('foodStatus.exposures')}: ${item.exposure_count ?? 0}`}
+                      meta={
+                        item.last_exposure_at
+                          ? formatDate(item.last_exposure_at, locale)
+                          : undefined
+                      }
+                      tint={statusTint(group.status)}
+                    />
+                  ))}
+                </Card>
+              ))}
+            <Text variant="caption" color={colors.textSecondary}>
+              {t('safety.consultProfessional')}
+            </Text>
+          </View>
+        ) : null}
+      </QueryState>
     </Screen>
   );
 }

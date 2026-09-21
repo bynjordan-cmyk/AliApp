@@ -1,4 +1,13 @@
-import { Button, Card, Divider, Screen, SectionHeader, Text, colors } from '@/design-system';
+import {
+  PageHeader,
+  Button,
+  Card,
+  Divider,
+  Screen,
+  SectionHeader,
+  Text,
+  colors,
+} from '@/design-system';
 import { useSession } from '@/features/auth/SessionProvider';
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
 import { deriveBabyAge } from '@/lib/dates';
@@ -14,7 +23,7 @@ export default function ProfileScreen() {
 
   return (
     <Screen>
-      <Text variant="display">{t('profile.title')}</Text>
+      <PageHeader title={t('profile.title')} icon="person-outline" />
 
       <Card>
         <SectionHeader title={t('profile.baby')} />

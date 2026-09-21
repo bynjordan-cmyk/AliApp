@@ -11,11 +11,12 @@ export function BabySelector() {
   const { babies, baby, setBabyId } = useActiveBaby();
   const { locale } = useI18n();
 
-  if (babies.length <= 1) return null;
+  if (babies.length === 0) return null;
 
   return (
     <ScrollView
       horizontal
+      style={styles.scroller}
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.row}
     >
@@ -33,7 +34,7 @@ export function BabySelector() {
             label={item.name}
             stateLabel={ageLabel}
             selected={item.id === baby?.id}
-            onPress={() => setBabyId(item.id)}
+            onPress={babies.length > 1 ? () => setBabyId(item.id) : undefined}
           />
         );
       })}
@@ -42,5 +43,6 @@ export function BabySelector() {
 }
 
 const styles = StyleSheet.create({
-  row: { gap: spacing.sm, paddingVertical: spacing.xs },
+  scroller: { flexGrow: 0, flexShrink: 0 },
+  row: { gap: spacing.sm, paddingVertical: spacing.xs, alignItems: 'center' },
 });

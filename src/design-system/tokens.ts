@@ -16,9 +16,9 @@ export const palette = {
   white: '#FFFFFF',
 
   // Supporting
-  background: '#F7FAFF',
+  background: '#F8F9FC',
   ink: '#18314E',
-  muted: '#6B7B91',
+  muted: '#58677D',
   line: '#DDE7F0',
   softCoral: '#FFF0F0',
   softAqua: '#ECFBFF',
@@ -36,9 +36,12 @@ export const colors = {
   surface: palette.white,
   surfaceMuted: palette.background,
   screen: palette.white,
-  textPrimary: palette.ink,
+  textPrimary: palette.navy,
   textSecondary: palette.muted,
   textOnAccent: palette.white,
+  textOnCoral: palette.navy,
+  error: '#A62F42',
+  transparent: 'transparent',
   border: palette.line,
   accent: palette.coral,
   accentSoft: palette.softCoral,
@@ -83,8 +86,8 @@ export const spacing = {
 export const radius = {
   sm: 8,
   md: 12,
-  lg: 18,
-  xl: 24,
+  lg: 24,
+  xl: 32,
   pill: 999,
 } as const;
 
@@ -95,10 +98,11 @@ export const touchTarget = {
 } as const;
 
 export const typography = {
-  display: { fontSize: 28, lineHeight: 34, fontWeight: '700' },
-  title: { fontSize: 22, lineHeight: 28, fontWeight: '700' },
+  navigation: { fontSize: 10, lineHeight: 16, fontWeight: '600' },
+  display: { fontSize: 32, lineHeight: 40, fontWeight: '700' },
+  title: { fontSize: 24, lineHeight: 32, fontWeight: '700' },
   subtitle: { fontSize: 17, lineHeight: 24, fontWeight: '600' },
-  body: { fontSize: 16, lineHeight: 22, fontWeight: '400' },
+  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
   bodyStrong: { fontSize: 16, lineHeight: 22, fontWeight: '600' },
   caption: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
   overline: { fontSize: 12, lineHeight: 16, fontWeight: '700' },

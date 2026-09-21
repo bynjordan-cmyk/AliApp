@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { colors, radius, spacing } from '../tokens';
 import { Text } from './Text';
@@ -12,6 +13,14 @@ export type EmptyStateProps = {
 export function EmptyState({ title, description, testID }: EmptyStateProps) {
   return (
     <View testID={testID} style={styles.root}>
+      <View
+        style={styles.icon}
+        accessible={false}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Ionicons name="journal-outline" size={28} color={colors.brand} />
+      </View>
       <Text variant="bodyStrong" center>
         {title}
       </Text>
@@ -25,8 +34,15 @@ export function EmptyState({ title, description, testID }: EmptyStateProps) {
 }
 
 const styles = StyleSheet.create({
+  icon: {
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    backgroundColor: colors.calmSoft,
+    alignSelf: 'center',
+    marginBottom: spacing.sm,
+  },
   root: {
-    padding: spacing.xl,
+    padding: spacing.xxl,
     gap: spacing.sm,
     borderRadius: radius.lg,
     backgroundColor: colors.surfaceMuted,

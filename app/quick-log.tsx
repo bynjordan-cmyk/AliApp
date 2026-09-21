@@ -1,18 +1,18 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import {
+  EventOption,
+  Input,
+  PageHeader,
   Button,
   Card,
   Chip,
   Screen,
-  SectionHeader,
   Text,
   colors,
-  radius,
   spacing,
-  touchTarget,
 } from '@/design-system';
 import { useSession } from '@/features/auth/SessionProvider';
 import { useActiveBaby } from '@/features/baby/ActiveBabyProvider';
@@ -73,7 +73,7 @@ export default function QuickLogScreen() {
 
   return (
     <Screen>
-      <SectionHeader title={t('quickLog.title')} />
+      <PageHeader title={t('quickLog.title')} icon="add-outline" />
 
       <View style={styles.kinds}>
         {(
@@ -84,39 +84,77 @@ export default function QuickLogScreen() {
             ['symptom', t('quickLog.symptom')],
             ['medication', t('quickLog.medication')],
           ] as const
-        ).map(([value, label]) => (
-          <Chip
-            key={value}
-            label={label}
-            selected={kind === value}
-            onPress={() => {
-              setKind(value);
-              setError(null);
-            }}
-          />
-        ))}
+        ).map(([value, label]) =>
+          kind ? (
+            <Chip
+              key={value}
+              label={label}
+              selected={kind === value}
+              onPress={() => {
+                setKind(value);
+                setError(null);
+              }}
+            />
+          ) : (
+            <EventOption
+              key={value}
+              kind={value}
+              label={label}
+              selected={kind === value}
+              onPress={() => {
+                setKind(value);
+                setError(null);
+              }}
+            />
+          ),
+        )}
       </View>
 
       {error ? (
-        <Text variant="caption" color={colors.accent}>
+        <Text variant="caption" color={colors.error} accessibilityRole="alert">
           {error}
         </Text>
       ) : null}
 
       {kind === 'breastfeed' ? (
-        <BreastfeedForm babyId={baby.id} context={context} onDone={() => router.back()} onError={setError} />
+        <BreastfeedForm
+          babyId={baby.id}
+          context={context}
+          onDone={() => router.back()}
+          onError={setError}
+        />
       ) : null}
       {kind === 'food' ? (
-        <FoodForm babyId={baby.id} context={context} onDone={() => router.back()} onError={setError} />
+        <FoodForm
+          babyId={baby.id}
+          context={context}
+          onDone={() => router.back()}
+          onError={setError}
+        />
       ) : null}
       {kind === 'diaper' ? (
-        <DiaperForm babyId={baby.id} context={context} onDone={() => router.back()} onError={setError} />
+        <DiaperForm
+          babyId={baby.id}
+          context={context}
+          onDone={() => router.back()}
+          onError={setError}
+        />
       ) : null}
       {kind === 'symptom' ? (
-        <SymptomForm babyId={baby.id} context={context} onDone={() => router.back()} onError={setError} />
+        <SymptomForm
+          babyId={baby.id}
+          context={context}
+          onDone={() => router.back()}
+          onError={setError}
+        />
       ) : null}
       {kind === 'medication' ? (
-        <MedicationForm babyId={baby.id} context={context} onDone={() => router.back()} onError={setError} />
+        <MedicationForm
+          babyId={baby.id}
+          context={context}
+          onDone={() => router.back()}
+          onError={setError}
+        />
       ) : null}
 
       <Button variant="ghost" label={t('common.cancel')} onPress={() => router.back()} />
@@ -143,7 +181,7 @@ function BreastfeedForm({ babyId, context, onDone, onError }: FormProps) {
         {(['left', 'right', 'both'] as const).map((value) => (
           <Chip
             key={value}
-            label={value === 'left' ? 'Izquierdo' : value === 'right' ? 'Derecho' : 'Ambos'}
+            label={t(`breastfeed.${value}`)}
             selected={side === value}
             onPress={() => setSide(value)}
           />
@@ -151,7 +189,7 @@ function BreastfeedForm({ babyId, context, onDone, onError }: FormProps) {
       </View>
       <Button
         label={t('common.save')}
-        disabled={mutation.isPending}
+        loading={mutation.isPending}
         onPress={() => {
           mutation.mutate(
             { babyId, startedAt: new Date().toISOString(), side },
@@ -193,7 +231,8 @@ function FoodForm({ babyId, context, onDone, onError }: FormProps) {
       </ScrollView>
       <Button
         label={t('common.save')}
-        disabled={selected.length === 0 || mutation.isPending}
+        disabled={selected.length === 0}
+        loading={mutation.isPending}
         onPress={() => {
           mutation.mutate(
             {
@@ -229,7 +268,8 @@ function DiaperForm({ babyId, context, onDone, onError }: FormProps) {
       </View>
       <Button
         label={t('common.save')}
-        disabled={!type || saving}
+        disabled={!type}
+        loading={saving}
         onPress={() => {
           if (!type) return;
           setSaving(true);
@@ -267,7 +307,7 @@ function SymptomForm({ babyId, context, onDone, onError }: FormProps) {
         {commonTypes.map((value) => (
           <Chip
             key={value}
-            label={value}
+            label={t(`symptom.${value}` as 'symptom.skin_rash')}
             selected={symptomType === value}
             onPress={() => setSymptomType(value)}
           />
@@ -290,7 +330,8 @@ function SymptomForm({ babyId, context, onDone, onError }: FormProps) {
 
       <Button
         label={t('common.save')}
-        disabled={!symptomType || mutation.isPending}
+        disabled={!symptomType}
+        loading={mutation.isPending}
         onPress={() => {
           if (!symptomType) return;
           mutation.mutate(
@@ -312,25 +353,16 @@ function MedicationForm({ babyId, context, onDone, onError }: FormProps) {
   return (
     <Card>
       <Text variant="subtitle">{t('quickLog.medication')}</Text>
-      <TextInput
-        style={styles.input}
-        accessibilityLabel={t('quickLog.medication')}
-        value={name}
-        onChangeText={setName}
-      />
+      <Input label={t('quickLog.medication')} value={name} onChangeText={setName} />
       <Text variant="caption" color={colors.textSecondary}>
         {t('common.optional')}
       </Text>
       {/* Texto libre: AliApp nunca calcula ni sugiere una dosis (§10). */}
-      <TextInput
-        style={styles.input}
-        accessibilityLabel="dosis"
-        value={doseText}
-        onChangeText={setDoseText}
-      />
+      <Input label={t('quickLog.dose')} value={doseText} onChangeText={setDoseText} />
       <Button
         label={t('common.save')}
-        disabled={name.trim().length === 0 || saving}
+        disabled={name.trim().length === 0}
+        loading={saving}
         onPress={() => {
           setSaving(true);
           createMedicationEvent(
@@ -354,14 +386,4 @@ function MedicationForm({ babyId, context, onDone, onError }: FormProps) {
 const styles = StyleSheet.create({
   kinds: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   foodList: { maxHeight: 240 },
-  input: {
-    minHeight: touchTarget.comfortable,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-    fontSize: 16,
-    color: colors.textPrimary,
-    backgroundColor: colors.surface,
-  },
 });
