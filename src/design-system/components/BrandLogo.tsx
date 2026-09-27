@@ -58,6 +58,7 @@ export function BrandLogo({
     <Image
       source={fuente.src}
       accessibilityLabel={t('common.appName')}
+      accessibilityRole="image"
       resizeMode="contain"
       style={[{ width: height * fuente.ratio, height }, style]}
     />

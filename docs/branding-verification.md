@@ -47,3 +47,17 @@ Datos ficticios; React Native Web, no dispositivos nativos. Consola sin errores 
 ![Registro rápido, 390 px](branding/registro-390.png)
 
 ![Hoy, escritorio](branding/hoy-desktop.png)
+
+## Revisión web y logo — 27 septiembre 2026
+
+Prioridad acordada: perfeccionar web antes de retomar Android/iOS. La usuaria utiliza Codemagic; no se modificó su configuración ni se iniciaron compilaciones móviles.
+
+- Se conserva el juego de logos de la versión remota (compacto, completo, navy e isotipo), junto al favicon existente. Se añade rol accesible de imagen.
+- Acceso limitado a 520 px; onboarding y registro rápido a 600 px. Barra lateral fijada a 232 px y selección coral suave.
+- Botones con estado hover, contraseña con autocompletado y envío por Enter. Título acorde al modo de acceso y limpieza de errores al cambiar de modo.
+- Integrado sobre 08a5daf. Typecheck, lint y 208 pruebas de dominio correctos. Exportación web completa correcta; no se repitieron las pruebas de base de datos para estos cambios de presentación.
+- Revisión en navegador a 1280×720 y 390×844 con datos ficticios: Inicio, acceso, errores de formulario y cambio de modo. Consola sin errores tras la recarga final. Capturas web, no pruebas móviles nativas ni de backend real.
+
+![Web escritorio con logo](branding/web-logo-desktop.png)
+
+![Acceso web estrecho](branding/web-logo-access.png)
