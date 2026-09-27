@@ -1,32 +1,24 @@
-import { Ionicons } from '@expo/vector-icons';
+import type { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../tokens';
+import { colors, spacing } from '../tokens';
+import { BrandLogo } from './BrandLogo';
 import { Text } from './Text';
 
 export function PageHeader({
   title,
   subtitle,
-  icon = 'heart-outline',
+  prominent = false,
 }: {
   title: string;
   subtitle?: string;
   icon?: React.ComponentProps<typeof Ionicons>['name'];
+  prominent?: boolean;
 }) {
   return (
     <View style={styles.root}>
-      <View
-        style={styles.brand}
-        accessible={false}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <View style={styles.mark}>
-          <Ionicons name={icon} size={22} color={colors.brand} />
-        </View>
-        <Text variant="bodyStrong" color={colors.brand}>
-          AliApp<Text color={colors.accent}>.</Text>
-        </Text>
+      <View style={styles.brand}>
+        <BrandLogo prominent={prominent} />
       </View>
       <Text variant="display" accessibilityRole="header">
         {title}
@@ -38,13 +30,5 @@ export function PageHeader({
 
 const styles = StyleSheet.create({
   root: { gap: spacing.sm },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
-  mark: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    backgroundColor: colors.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  brand: { alignItems: 'flex-start', marginBottom: spacing.md },
 });

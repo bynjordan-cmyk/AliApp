@@ -24,7 +24,7 @@ export default function SignInScreen() {
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
   const [error, setError] = useState<string | null>(null);
 
-  const { control, handleSubmit, formState } = useForm<Credentials>({
+  const { control, handleSubmit, formState, clearErrors } = useForm<Credentials>({
     resolver: zodResolver(credentialsSchema),
     defaultValues: { email: '', password: '', displayName: '' },
   });
@@ -44,9 +44,13 @@ export default function SignInScreen() {
   });
 
   return (
-    <Screen>
+    <Screen maxWidth={520}>
       <View style={styles.header}>
-        <PageHeader title={t('auth.signInTitle')} subtitle={t('auth.signInSubtitle')} />
+        <PageHeader
+          prominent
+          title={mode === 'sign-in' ? t('auth.signInTitle') : t('auth.signUp')}
+          subtitle={t('auth.signInSubtitle')}
+        />
       </View>
 
       <Card>
@@ -95,6 +99,8 @@ export default function SignInScreen() {
               placeholder={t('auth.password')}
               label={t('auth.password')}
               secureTextEntry
+              autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+              onSubmitEditing={onSubmit}
               value={field.value}
               onChangeText={field.onChange}
             />
@@ -115,7 +121,11 @@ export default function SignInScreen() {
         <Button
           variant="ghost"
           label={mode === 'sign-in' ? t('auth.toggleToSignUp') : t('auth.toggleToSignIn')}
-          onPress={() => setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in')}
+          onPress={() => {
+            setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in');
+            clearErrors();
+            setError(null);
+          }}
         />
       </Card>
 

@@ -54,7 +54,7 @@ export default function QuickLogScreen() {
 
   if (!baby || !household || !profile) {
     return (
-      <Screen>
+      <Screen maxWidth={600}>
         <Text variant="title">{t('quickLog.title')}</Text>
         <Text color={colors.textSecondary}>{t('today.noBaby')}</Text>
       </Screen>
@@ -63,7 +63,7 @@ export default function QuickLogScreen() {
 
   if (!canLog) {
     return (
-      <Screen>
+      <Screen maxWidth={600}>
         <Text variant="title">{t('quickLog.title')}</Text>
         <Text color={colors.textSecondary}>{t('roles.professional_viewer')}</Text>
         <Button variant="secondary" label={t('common.close')} onPress={() => router.back()} />
@@ -72,7 +72,7 @@ export default function QuickLogScreen() {
   }
 
   return (
-    <Screen>
+    <Screen maxWidth={600}>
       <PageHeader title={t('quickLog.title')} icon="add-outline" />
 
       <View style={styles.kinds}>
