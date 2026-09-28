@@ -1,6 +1,8 @@
-import { Image, type ImageStyle } from 'react-native';
+import { Image, View, type ImageStyle } from 'react-native';
 
 import { useT } from '@/lib/i18n';
+import { colors, spacing, typography } from '../tokens';
+import { Text } from './Text';
 
 /**
  * Logotipo oficial de AliApp.
@@ -54,10 +56,51 @@ export function BrandLogo({
   const efectiva = variant === 'full' && height < MIN_ALTURA_CON_ESLOGAN ? 'compact' : variant;
   const fuente = FUENTES[efectiva][monochrome ? 'navy' : 'color'];
 
+  // Keep the high-resolution source intact. Clip its white margins at render
+  // time instead of baking another small, repeatedly resampled PNG.
+  if (!monochrome && efectiva !== 'mark') {
+    const scale = height / 515;
+    const width = 1840 * scale;
+    return (
+      <View style={[{ width }, style]}>
+        <View style={{ width, height, overflow: 'hidden', backgroundColor: colors.surface }}>
+          <Image
+            source={require('../../../assets/brand/aliapp-clean-white.png')}
+            accessibilityLabel={t('common.appName')}
+            accessibilityRole="image"
+            resizeMode="contain"
+            style={{
+              position: 'absolute',
+              width: 1942 * scale,
+              height: 809 * scale,
+              left: -35 * scale,
+              top: -145 * scale,
+            }}
+          />
+        </View>
+        {efectiva === 'full' ? (
+          <Text
+            style={{
+              ...typography.overline,
+              fontSize: 10,
+              lineHeight: 16,
+              letterSpacing: 1,
+              marginTop: spacing.sm,
+            }}
+            center
+          >
+            {t('brand.signature')}
+          </Text>
+        ) : null}
+      </View>
+    );
+  }
+
   return (
     <Image
       source={fuente.src}
       accessibilityLabel={t('common.appName')}
+      accessibilityRole="image"
       resizeMode="contain"
       style={[{ width: height * fuente.ratio, height }, style]}
     />

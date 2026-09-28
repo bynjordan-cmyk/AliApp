@@ -5,16 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
 import { z } from 'zod';
 
-import {
-  BrandLogo,
-  Input,
-  Button,
-  Card,
-  Screen,
-  Text,
-  colors,
-  spacing,
-} from '@/design-system';
+import { BrandLogo, Input, Button, Card, Screen, Text, colors, spacing } from '@/design-system';
 import { useSession } from '@/features/auth/SessionProvider';
 import { useT } from '@/lib/i18n';
 
@@ -33,7 +24,7 @@ export default function SignInScreen() {
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
   const [error, setError] = useState<string | null>(null);
 
-  const { control, handleSubmit, formState } = useForm<Credentials>({
+  const { control, handleSubmit, formState, clearErrors } = useForm<Credentials>({
     resolver: zodResolver(credentialsSchema),
     defaultValues: { email: '', password: '', displayName: '' },
   });
@@ -53,11 +44,11 @@ export default function SignInScreen() {
   });
 
   return (
-    <Screen>
+    <Screen maxWidth={520}>
       <View style={styles.header}>
         <BrandLogo variant="full" height={84} style={{ marginBottom: spacing.lg }} />
         <Text variant="display" accessibilityRole="header">
-          {t('auth.signInTitle')}
+          {mode === 'sign-in' ? t('auth.signInTitle') : t('auth.signUp')}
         </Text>
         <Text color={colors.textSecondary}>{t('auth.signInSubtitle')}</Text>
       </View>
@@ -105,6 +96,8 @@ export default function SignInScreen() {
               onBlur={field.onBlur}
               label={t('auth.password')}
               secureTextEntry
+              autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+              onSubmitEditing={onSubmit}
               value={field.value}
               onChangeText={field.onChange}
             />
@@ -125,7 +118,11 @@ export default function SignInScreen() {
         <Button
           variant="ghost"
           label={mode === 'sign-in' ? t('auth.toggleToSignUp') : t('auth.toggleToSignIn')}
-          onPress={() => setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in')}
+          onPress={() => {
+            setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in');
+            clearErrors();
+            setError(null);
+          }}
         />
       </Card>
 

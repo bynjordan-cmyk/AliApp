@@ -34,6 +34,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.brand,
+        tabBarActiveBackgroundColor: colors.accentSoft,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarPosition: isDesktop ? 'left' : 'bottom',
         tabBarVariant: isDesktop ? 'material' : 'uikit',
@@ -41,6 +42,8 @@ export default function TabsLayout() {
         tabBarStyle: isDesktop
           ? {
               width: SIDEBAR_WIDTH,
+              minWidth: SIDEBAR_WIDTH,
+              maxWidth: SIDEBAR_WIDTH,
               backgroundColor: colors.surface,
               borderRightColor: colors.border,
               borderRightWidth: 1,

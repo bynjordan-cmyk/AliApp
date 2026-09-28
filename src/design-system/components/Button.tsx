@@ -26,6 +26,7 @@ export function Button({
   testID,
 }: ButtonProps) {
   const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const isPrimary = variant === 'primary';
   const isGhost = variant === 'ghost';
 
@@ -39,6 +40,8 @@ export function Button({
       disabled={disabled || loading}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
@@ -47,7 +50,7 @@ export function Button({
         isGhost && styles.ghost,
         pressed && styles.pressed,
         disabled && styles.disabled,
-        focused && styles.focused,
+        (focused || (hovered && !disabled && !loading)) && styles.focused,
         style,
       ]}
     >

@@ -81,7 +81,7 @@ export default function OnboardingScreen() {
   });
 
   return (
-    <Screen>
+    <Screen maxWidth={600}>
       <View style={styles.header}>
         <PageHeader title={t('onboarding.title')} icon="people-outline" />
         <Text color={colors.textSecondary}>{t('safety.notDiagnostic')}</Text>

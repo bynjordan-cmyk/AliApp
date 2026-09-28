@@ -6,6 +6,7 @@ import type { TranslationKey } from '../keys';
 
 export const en: Record<TranslationKey, string> = {
   'common.appName': 'AliApp',
+  'brand.signature': 'FOOD · ALLERGIES · BRIGHTER DAYS',
   'common.save': 'Save',
   'common.cancel': 'Cancel',
   'common.delete': 'Delete',
@@ -61,12 +62,14 @@ export const en: Record<TranslationKey, string> = {
   'today.noBaby': 'Add a baby to get started',
   'today.highlight.eyebrow': 'What matters today',
   'today.highlight.openEpisodeTitle': 'You have an open episode',
-  'today.highlight.openEpisodeBody': 'You can keep adding symptoms, notes and photos while it lasts.',
+  'today.highlight.openEpisodeBody':
+    'You can keep adding symptoms, notes and photos while it lasts.',
   'today.highlight.reviewTitle': 'Journey review coming up',
   'today.highlight.reviewToday': 'The review date you noted is today.',
   'today.highlight.reviewInDays': '{days} days left until the review date you noted.',
   'today.highlight.symptomsTitle': 'Symptoms logged today',
-  'today.highlight.symptomsBody': 'There are {count} symptom record(s) today. You can add photos and group them into an episode.',
+  'today.highlight.symptomsBody':
+    'There are {count} symptom record(s) today. You can add photos and group them into an episode.',
   'today.highlight.journeyTitle': 'Journey in progress',
   'today.highlight.journeyBody': 'Daily logging stays exactly the same while the journey lasts.',
   'today.highlight.calmTitle': 'No symptoms logged today',
@@ -159,7 +162,8 @@ export const en: Record<TranslationKey, string> = {
   'food.breastfeedingEmptyHint': 'Each feed keeps its time, side and duration.',
 
   'food.addToBoard': 'Mark a food',
-  'food.addToBoardHint': 'Pick a food and say where it stands. You set the status: AliApp never marks anything on its own.',
+  'food.addToBoardHint':
+    'Pick a food and say where it stands. You set the status: AliApp never marks anything on its own.',
   'food.searchFood': 'Search the catalogue',
   'food.chooseStatus': 'Where does it stand?',
   'food.changeStatus': 'Change status',
@@ -177,7 +181,8 @@ export const en: Record<TranslationKey, string> = {
   'media.takePhoto': 'Take photo',
   'media.fromLibrary': 'Choose from library',
   'media.permissionNeeded': 'We need your permission to use the camera or your photos.',
-  'media.documentation': 'Photos are documentation: AliApp keeps them in order and does not interpret what they show.',
+  'media.documentation':
+    'Photos are documentation: AliApp keeps them in order and does not interpret what they show.',
   'media.empty': 'When you add photos to this record, you will see them here in order.',
 
   'health.title': 'Health',
@@ -222,7 +227,8 @@ export const en: Record<TranslationKey, string> = {
   'common.hoursShort': 'h',
   'common.minutesShort': 'min',
   'reactions.title': 'Group into an episode',
-  'reactions.subtitle': 'Bring together the symptoms of one reaction and note what had been logged before.',
+  'reactions.subtitle':
+    'Bring together the symptoms of one reaction and note what had been logged before.',
   'reactions.step1': '1 · Symptoms in the episode',
   'reactions.step1Hint': 'Pick one or more. The episode starts at the earliest one.',
   'reactions.step2': '2 · What was logged before',
@@ -234,7 +240,8 @@ export const en: Record<TranslationKey, string> = {
   'reactions.noExposuresHint': 'Try a wider window, or carry on without linking anything.',
   'reactions.noSymptoms': 'No symptoms logged yet',
   'reactions.noSymptomsHint': 'Log a symptom from the quick log button and come back here.',
-  'reactions.noCausality': 'AliApp shows the time elapsed between records. It does not establish that a food caused a symptom.',
+  'reactions.noCausality':
+    'AliApp shows the time elapsed between records. It does not establish that a food caused a symptom.',
   'reactions.linkedExposures': 'Linked exposures',
   'reactions.step3': '3 · Notes and photos',
   'reactions.save': 'Save episode',
@@ -256,13 +263,15 @@ export const en: Record<TranslationKey, string> = {
   'diaper.whatBefore': 'See what was eaten before',
   'diaper.beforeThis': 'before this stool',
   'diaper.nothingBefore': 'No feeding records in that window.',
-  'diaper.noCausality': 'This is the time order of what was logged. AliApp does not link a food to what was seen in the diaper.',
+  'diaper.noCausality':
+    'This is the time order of what was logged. AliApp does not link a food to what was seen in the diaper.',
 
   'calendar.title': 'Calendar',
   'calendar.previousMonth': 'Previous month',
   'calendar.nextMonth': 'Next month',
   'calendar.milestone': 'journey milestone',
-  'calendar.legend': 'The number is how many records that day has. The dot marks a journey date you noted.',
+  'calendar.legend':
+    'The number is how many records that day has. The dot marks a journey date you noted.',
   'calendar.emptyDay': 'No records on this day.',
   'calendar.layer.symptoms': 'Symptoms',
   'calendar.layer.babyFood': 'Baby food',
@@ -295,7 +304,8 @@ export const en: Record<TranslationKey, string> = {
   'journeys.noDateSet': 'No date noted',
   'journeys.started': 'Started',
   'journeys.empty': 'No journeys yet',
-  'journeys.emptyHint': 'A journey groups what you already log: it does not change how you record your day.',
+  'journeys.emptyHint':
+    'A journey groups what you already log: it does not change how you record your day.',
   'journeys.reviewOn': 'Review date',
   'journeys.targets': 'Journey foods',
   'reminders.title': 'Reminders',
@@ -342,11 +352,14 @@ export const en: Record<TranslationKey, string> = {
   'profile.language': 'Language',
   'profile.noBirthDate': 'No date of birth recorded',
   'profile.babiesCount': 'babies in this household',
-  'profile.privacyHint': 'Your records are private and only visible to people in your AliApp household.',
+  'profile.privacyHint':
+    'Your records are private and only visible to people in your AliApp household.',
   'profile.documents': 'Documents and plans',
-  'profile.documentsHint': 'This is where you will keep the plans and reports from your healthcare professional.',
+  'profile.documentsHint':
+    'This is where you will keep the plans and reports from your healthcare professional.',
   'profile.deleteAccount': 'Delete account',
-  'profile.deleteAccountHint': 'You will be able to delete your account and data here in a future version.',
+  'profile.deleteAccountHint':
+    'You will be able to delete your account and data here in a future version.',
   'profile.privacy': 'Privacy',
   'profile.export': 'Export data',
   'profile.exportPlaceholder': 'Export is coming in a future version.',
@@ -376,7 +389,8 @@ export const en: Record<TranslationKey, string> = {
   'record.editedOn': 'Edited on {date}',
   'record.history': 'Change history',
   'record.historyEmpty': 'This record is exactly as it was saved.',
-  'record.historyHint': 'Every correction is kept: it is part of the history you will share with your healthcare professional.',
+  'record.historyHint':
+    'Every correction is kept: it is part of the history you will share with your healthcare professional.',
   'record.changeFrom': 'before',
   'record.changeTo': 'now',
   'record.emptyValue': 'not set',
@@ -435,13 +449,16 @@ export const en: Record<TranslationKey, string> = {
   // --- Label reading --------------------------------------------------------
   'label.title': 'Scan a label',
   'label.cta': 'Scan a label',
-  'label.intro': 'Take a photo of the ingredient list. AliApp reads the text and compares it with the foods you marked as Avoid.',
-  'label.limits': 'AliApp does not know what a product contains: it only compares the text it read with your list.',
+  'label.intro':
+    'Take a photo of the ingredient list. AliApp reads the text and compares it with the foods you marked as Avoid.',
+  'label.limits':
+    'AliApp does not know what a product contains: it only compares the text it read with your list.',
   'label.reading': 'Reading the label…',
   'label.rawText': 'Detected text',
   'label.rawHint': 'This is what was read from the photo, as it came out.',
   'label.ingredients': 'Detected ingredients',
-  'label.ingredientsHint': 'Remove the ones that do not belong and add any that are missing before comparing.',
+  'label.ingredientsHint':
+    'Remove the ones that do not belong and add any that are missing before comparing.',
   'label.addIngredient': 'Add an ingredient',
   'label.confirmReading': 'Confirm reading',
   'label.results': 'Results',
@@ -454,20 +471,26 @@ export const en: Record<TranslationKey, string> = {
   'label.verifyOriginal': 'Check the original product label as well.',
   'label.unreadable': 'We could not read any text in this photo.',
   'label.unreadableHint': 'Try again with more light, or closer to the ingredient list.',
-  'label.framingTip': 'Frame ONLY the ingredient list, close up and with the label as flat as you can. A photo of the whole package reads much worse.',
+  'label.framingTip':
+    'Frame ONLY the ingredient list, close up and with the label as flat as you can. A photo of the whole package reads much worse.',
   'label.retryRead': 'Retry reading',
   'label.error.cameraUnavailable': 'We could not open the camera.',
-  'label.error.cameraUnavailableHint': 'Another app may be using it, or this browser may not offer it. Pick a photo from the device: it works the same.',
+  'label.error.cameraUnavailableHint':
+    'Another app may be using it, or this browser may not offer it. Pick a photo from the device: it works the same.',
   'label.error.permissionDenied': 'The browser did not give us camera permission.',
-  'label.error.permissionDeniedHint': 'You can grant it from the padlock in the address bar, or pick a photo from the device.',
+  'label.error.permissionDeniedHint':
+    'You can grant it from the padlock in the address bar, or pick a photo from the device.',
   'label.error.engineLoad': 'We could not load the text reader.',
   'label.error.engineLoadHint': 'Usually the connection. Tap "Use this photo" again to retry.',
   'label.error.worker': 'The reader stopped halfway.',
-  'label.error.workerHint': 'Tap "Use this photo" again with the same image. If it keeps happening, try retaking it.',
+  'label.error.workerHint':
+    'Tap "Use this photo" again with the same image. If it keeps happening, try retaking it.',
   'label.error.unreadable': 'We could not read any text in this photo.',
-  'label.error.unreadableHint': 'Retake it with more light, closer, and with the label as flat as possible.',
+  'label.error.unreadableHint':
+    'Retake it with more light, closer, and with the label as flat as possible.',
   'label.error.lowConfidence': 'The reading came out too garbled to show you.',
-  'label.error.lowConfidenceHint': 'This usually happens when photographing a screen, a whole package or a nutrition table. Move closer to the ingredient list, or pick a screenshot from your device.',
+  'label.error.lowConfidenceHint':
+    'This usually happens when photographing a screen, a whole package or a nutrition table. Move closer to the ingredient list, or pick a screenshot from your device.',
   'label.error.noText': 'The photo was read, but no usable text came out.',
   'label.error.noTextHint': 'Retake it framing only the ingredient list.',
   'label.systemCamera': 'Take a photo with your phone camera',
@@ -476,15 +499,19 @@ export const en: Record<TranslationKey, string> = {
   'label.openCamera': 'Open camera',
   'label.takePhoto': 'Take photo',
   'label.chooseFile': 'Or pick a photo from this device',
-  'label.cameraFallback': 'We could not open the camera here. Pick a photo from the device and it works the same.',
+  'label.cameraFallback':
+    'We could not open the camera here. Pick a photo from the device and it works the same.',
   'label.usePhoto': 'Use this photo',
   'label.retake': 'Retake',
-  'label.processingHint': 'The first read takes a little longer: the reader downloads once and stays in the browser.',
-  'label.editText': 'You can correct the text before continuing. Automatic reading gets things wrong sometimes.',
+  'label.processingHint':
+    'The first read takes a little longer: the reader downloads once and stays in the browser.',
+  'label.editText':
+    'You can correct the text before continuing. Automatic reading gets things wrong sometimes.',
   'label.continueStep': 'Continue',
   'label.matchesIntro': 'We found these matches in the detected text.',
   'label.ocrMayErr': 'Automatic reading may contain errors.',
-  'label.privacy': 'The photo does not leave your device: the text is read right here and the image is not saved.',
+  'label.privacy':
+    'The photo does not leave your device: the text is read right here and the image is not saved.',
   'label.engineNotice': 'Text read on your device ({engine}).',
   'label.unavailable': 'This device cannot read labels automatically.',
   'label.unavailableHint': 'You can type the ingredients by hand and compare all the same.',
@@ -492,7 +519,8 @@ export const en: Record<TranslationKey, string> = {
   'label.scanAgain': 'Read another label',
   'label.unmatched': 'No match on your list',
   'label.noAvoidList': 'You have not marked any food as Avoid yet.',
-  'label.noAvoidListHint': 'Once you mark foods on the board, label reading will compare them with what you read.',
+  'label.noAvoidListHint':
+    'Once you mark foods on the board, label reading will compare them with what you read.',
   'label.pasteText': 'Type the text by hand',
   'label.pastePlaceholder': 'Ingredients: …',
 
