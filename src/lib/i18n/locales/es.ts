@@ -5,6 +5,7 @@
  */
 export const es = {
   'common.appName': 'AliApp',
+  'brand.signature': 'FOOD · ALLERGIES · BRIGHTER DAYS',
   'common.save': 'Guardar',
   'common.cancel': 'Cancelar',
   'common.delete': 'Eliminar',
@@ -75,18 +76,21 @@ export const es = {
   'today.noBaby': 'Añade un bebé para empezar',
   'today.highlight.eyebrow': 'Lo importante hoy',
   'today.highlight.openEpisodeTitle': 'Tienes un episodio abierto',
-  'today.highlight.openEpisodeBody': 'Puedes seguir añadiendo síntomas, notas y fotos mientras dure.',
+  'today.highlight.openEpisodeBody':
+    'Puedes seguir añadiendo síntomas, notas y fotos mientras dure.',
   'today.highlight.reviewTitle': 'Revisión de proceso cerca',
   'today.highlight.reviewToday': 'La fecha de revisión que anotasteis es hoy.',
   'today.highlight.reviewInDays': 'Quedan {days} días para la fecha de revisión que anotasteis.',
   'today.highlight.symptomsTitle': 'Síntomas registrados hoy',
-  'today.highlight.symptomsBody': 'Hoy hay {count} registro(s) de síntoma. Puedes añadir fotos y agruparlos en un episodio.',
+  'today.highlight.symptomsBody':
+    'Hoy hay {count} registro(s) de síntoma. Puedes añadir fotos y agruparlos en un episodio.',
   'today.highlight.journeyTitle': 'Proceso en marcha',
-  'today.highlight.journeyBody': 'El registro diario sigue siendo el de siempre mientras dure el proceso.',
+  'today.highlight.journeyBody':
+    'El registro diario sigue siendo el de siempre mientras dure el proceso.',
   'today.highlight.calmTitle': 'Día sin síntomas registrados',
   'today.highlight.calmBody': 'Llevas {count} registro(s) hoy y ningún síntoma anotado.',
-  'today.highlight.noRecordsBody': 'Todavía no hay registros de hoy. Cuando anotes algo, aparecerá aquí.',
-
+  'today.highlight.noRecordsBody':
+    'Todavía no hay registros de hoy. Cuando anotes algo, aparecerá aquí.',
 
   'today.highlight.reminderTitle': 'Tienes un recordatorio cerca',
   'today.highlight.reminderBody': '«{title}» en {minutes} min. Lo pusiste tú.',
@@ -149,7 +153,8 @@ export const es = {
   'food.amount': 'Cantidad',
 
   'food.boardEmpty': 'Nada en este estado todavía',
-  'food.boardEmptyHint': 'Los alimentos aparecen aquí a medida que los registras o marcas su estado.',
+  'food.boardEmptyHint':
+    'Los alimentos aparecen aquí a medida que los registras o marcas su estado.',
   'food.neverIntroduced': 'Todavía no lo has introducido',
   'food.statusSetBy': 'Estado fijado por',
   'food.babyEmpty': 'Sin comidas registradas del bebé',
@@ -160,7 +165,8 @@ export const es = {
   'food.breastfeedingEmptyHint': 'Cada toma queda con su hora, su lado y su duración.',
 
   'food.addToBoard': 'Marcar un alimento',
-  'food.addToBoardHint': 'Elige un alimento y dile en qué situación está. El estado lo fijas tú: AliApp no marca nada por su cuenta.',
+  'food.addToBoardHint':
+    'Elige un alimento y dile en qué situación está. El estado lo fijas tú: AliApp no marca nada por su cuenta.',
   'food.searchFood': 'Buscar en el catálogo',
   'food.chooseStatus': '¿En qué situación está?',
   'food.changeStatus': 'Cambiar estado',
@@ -179,7 +185,8 @@ export const es = {
   'media.takePhoto': 'Hacer foto',
   'media.fromLibrary': 'Elegir de la galería',
   'media.permissionNeeded': 'Necesitamos tu permiso para acceder a la cámara o a las fotos.',
-  'media.documentation': 'Las fotos son documentación: AliApp las ordena en el tiempo y no interpreta lo que muestran.',
+  'media.documentation':
+    'Las fotos son documentación: AliApp las ordena en el tiempo y no interpreta lo que muestran.',
   'media.empty': 'Cuando añadas fotos a este registro, aquí verás su evolución en orden.',
 
   'health.title': 'Salud',
@@ -213,7 +220,8 @@ export const es = {
   'health.noMedications': 'Sin medicación registrada',
   'health.noMedicationsHint': 'Lo que le des queda anotado aquí, con su hora.',
   'health.noAttachments': 'Sin adjuntos',
-  'health.noAttachmentsHint': 'Las fotos y los documentos que añadas a un registro aparecerán aquí.',
+  'health.noAttachmentsHint':
+    'Las fotos y los documentos que añadas a un registro aparecerán aquí.',
 
   'diaper.type': 'Tipo',
   'diaper.urine': 'Pipí',
@@ -227,19 +235,23 @@ export const es = {
   'common.hoursShort': 'h',
   'common.minutesShort': 'min',
   'reactions.title': 'Agrupar en un episodio',
-  'reactions.subtitle': 'Reúne los síntomas de una misma reacción y anota qué se había registrado antes.',
+  'reactions.subtitle':
+    'Reúne los síntomas de una misma reacción y anota qué se había registrado antes.',
   'reactions.step1': '1 · Síntomas del episodio',
   'reactions.step1Hint': 'Elige uno o varios. El episodio empieza en el más temprano.',
   'reactions.step2': '2 · Qué se registró antes',
-  'reactions.windowHint': 'La ventana es un filtro para mirar hacia atrás, no una afirmación sobre la causa.',
+  'reactions.windowHint':
+    'La ventana es un filtro para mirar hacia atrás, no una afirmación sobre la causa.',
   'reactions.windowLabel': '{hours} h antes',
   'reactions.beforeSymptom': 'antes del síntoma',
   'reactions.selectSymptomFirst': 'Elige primero un síntoma para ver qué se registró antes.',
   'reactions.noExposures': 'No hay registros en esa ventana',
   'reactions.noExposuresHint': 'Prueba con una ventana más amplia o sigue sin relacionar nada.',
   'reactions.noSymptoms': 'Todavía no hay síntomas registrados',
-  'reactions.noSymptomsHint': 'Registra un síntoma desde el botón de registro rápido y vuelve aquí.',
-  'reactions.noCausality': 'AliApp muestra el tiempo transcurrido entre lo registrado. No establece que un alimento haya provocado un síntoma.',
+  'reactions.noSymptomsHint':
+    'Registra un síntoma desde el botón de registro rápido y vuelve aquí.',
+  'reactions.noCausality':
+    'AliApp muestra el tiempo transcurrido entre lo registrado. No establece que un alimento haya provocado un síntoma.',
   'reactions.linkedExposures': 'Exposiciones relacionadas',
   'reactions.step3': '3 · Notas y fotos',
   'reactions.save': 'Guardar episodio',
@@ -261,13 +273,15 @@ export const es = {
   'diaper.whatBefore': 'Ver qué comió antes',
   'diaper.beforeThis': 'antes de esta deposición',
   'diaper.nothingBefore': 'No hay registros de alimentación en esa ventana.',
-  'diaper.noCausality': 'Esto es el orden en el tiempo de lo registrado. AliApp no relaciona un alimento con lo observado en el pañal.',
+  'diaper.noCausality':
+    'Esto es el orden en el tiempo de lo registrado. AliApp no relaciona un alimento con lo observado en el pañal.',
 
   'calendar.title': 'Calendario',
   'calendar.previousMonth': 'Mes anterior',
   'calendar.nextMonth': 'Mes siguiente',
   'calendar.milestone': 'hito de proceso',
-  'calendar.legend': 'El número es cuántos registros hay ese día. El punto marca una fecha del proceso que anotasteis.',
+  'calendar.legend':
+    'El número es cuántos registros hay ese día. El punto marca una fecha del proceso que anotasteis.',
   'calendar.emptyDay': 'Sin registros este día.',
   'calendar.layer.symptoms': 'Síntomas',
   'calendar.layer.babyFood': 'Comida del bebé',
@@ -305,7 +319,8 @@ export const es = {
   'journeys.noDateSet': 'Sin fecha anotada',
   'journeys.started': 'Inicio',
   'journeys.empty': 'Todavía no hay ningún proceso',
-  'journeys.emptyHint': 'Un proceso agrupa lo que ya registras: no cambia tu forma de anotar el día a día.',
+  'journeys.emptyHint':
+    'Un proceso agrupa lo que ya registras: no cambia tu forma de anotar el día a día.',
   'journeys.reviewOn': 'Fecha de revisión',
   'journeys.targets': 'Alimentos del proceso',
 
@@ -353,11 +368,14 @@ export const es = {
   'profile.language': 'Idioma',
   'profile.noBirthDate': 'Sin fecha de nacimiento registrada',
   'profile.babiesCount': 'bebés en esta familia',
-  'profile.privacyHint': 'Tus registros son privados y solo los ve quien pertenece a tu familia en AliApp.',
+  'profile.privacyHint':
+    'Tus registros son privados y solo los ve quien pertenece a tu familia en AliApp.',
   'profile.documents': 'Documentos y planes',
-  'profile.documentsHint': 'Aquí podrás guardar los planes e informes que te dé tu profesional sanitario.',
+  'profile.documentsHint':
+    'Aquí podrás guardar los planes e informes que te dé tu profesional sanitario.',
   'profile.deleteAccount': 'Eliminar cuenta',
-  'profile.deleteAccountHint': 'Podrás borrar tu cuenta y tus datos desde aquí en una próxima versión.',
+  'profile.deleteAccountHint':
+    'Podrás borrar tu cuenta y tus datos desde aquí en una próxima versión.',
   'profile.privacy': 'Privacidad',
   'profile.export': 'Exportar datos',
   'profile.exportPlaceholder': 'La exportación llegará en una próxima versión.',
@@ -377,7 +395,8 @@ export const es = {
 
   'today.noBabyHint': 'Cuando añadas un bebé podrás registrar tomas, comidas, pañales y síntomas.',
   'today.timelineHint': 'Toca un registro para ver su detalle y sus fotos.',
-  'timeline.emptyHint': 'Lo que registres irá apareciendo aquí en orden, con la hora en la que ocurrió.',
+  'timeline.emptyHint':
+    'Lo que registres irá apareciendo aquí en orden, con la hora en la que ocurrió.',
 
   'safety.notDiagnostic':
     'AliApp registra observaciones y patrones temporales. No diagnostica alergias ni indica tratamientos.',
@@ -390,7 +409,8 @@ export const es = {
   'record.editedOn': 'Editado el {date}',
   'record.history': 'Historial de cambios',
   'record.historyEmpty': 'Este registro está tal como se guardó.',
-  'record.historyHint': 'Queda constancia de cada corrección: es parte del historial que compartirás con tu profesional sanitario.',
+  'record.historyHint':
+    'Queda constancia de cada corrección: es parte del historial que compartirás con tu profesional sanitario.',
   'record.changeFrom': 'antes',
   'record.changeTo': 'ahora',
   'record.emptyValue': 'sin dato',
@@ -431,7 +451,8 @@ export const es = {
   'pending.title': 'Pendientes de completar',
   'pending.count': '{count} registros pueden completarse',
   'pending.countOne': '1 registro puede completarse',
-  'pending.hint': 'Guardaste lo esencial, que es lo que importaba en ese momento. Si te apetece, añade el detalle ahora.',
+  'pending.hint':
+    'Guardaste lo esencial, que es lo que importaba en ese momento. Si te apetece, añade el detalle ahora.',
   'pending.dismiss': 'Ocultar por ahora',
   'pending.canAdd': 'Puedes añadir: {fields}',
   'pending.field.endedAt': 'hora de fin',
@@ -449,39 +470,51 @@ export const es = {
   // --- Lectura de etiquetas -------------------------------------------------
   'label.title': 'Escanear etiqueta',
   'label.cta': 'Escanear etiqueta',
-  'label.intro': 'Haz una foto de la lista de ingredientes. AliApp lee el texto y lo compara con los alimentos que has marcado como Evitar.',
-  'label.limits': 'AliApp no sabe qué contiene un producto: solo compara el texto leído con tu lista.',
+  'label.intro':
+    'Haz una foto de la lista de ingredientes. AliApp lee el texto y lo compara con los alimentos que has marcado como Evitar.',
+  'label.limits':
+    'AliApp no sabe qué contiene un producto: solo compara el texto leído con tu lista.',
   'label.reading': 'Leyendo la etiqueta…',
   'label.rawText': 'Texto detectado',
   'label.rawHint': 'Esto es lo que se ha leído de la foto, tal cual.',
   'label.ingredients': 'Ingredientes detectados',
-  'label.ingredientsHint': 'Quita los que no correspondan y añade los que falten antes de comparar.',
+  'label.ingredientsHint':
+    'Quita los que no correspondan y añade los que falten antes de comparar.',
   'label.addIngredient': 'Añadir un ingrediente',
   'label.confirmReading': 'Confirmar lectura',
   'label.results': 'Resultados',
   'label.detected': 'Detectamos: {ingredients}.',
   'label.matchAvoid': '{ingredient} coincide con un alimento marcado como Evitar.',
-  'label.matchSupervision': '{ingredient} coincide con un alimento marcado como Con supervisión profesional.',
+  'label.matchSupervision':
+    '{ingredient} coincide con un alimento marcado como Con supervisión profesional.',
   'label.matchOther': '{ingredient} coincide con {food}, que está en tu panel de alimentos.',
-  'label.noMatches': 'Ninguno de los ingredientes leídos coincide con un alimento marcado como Evitar.',
+  'label.noMatches':
+    'Ninguno de los ingredientes leídos coincide con un alimento marcado como Evitar.',
   'label.noMatchesHint': 'Esto habla de tu lista, no del producto.',
   'label.verifyOriginal': 'Verifica también la etiqueta original del producto.',
   'label.unreadable': 'No hemos podido leer texto en esta foto.',
   'label.unreadableHint': 'Prueba con más luz, o acercando la lista de ingredientes.',
-  'label.framingTip': 'Encuadra SOLO la lista de ingredientes, de cerca y con la etiqueta lo más plana que puedas. Una foto del envase entero se lee mucho peor.',
+  'label.framingTip':
+    'Encuadra SOLO la lista de ingredientes, de cerca y con la etiqueta lo más plana que puedas. Una foto del envase entero se lee mucho peor.',
   'label.retryRead': 'Reintentar lectura',
   'label.error.cameraUnavailable': 'No hemos podido abrir la cámara.',
-  'label.error.cameraUnavailableHint': 'Puede que otra aplicación la esté usando, o que este navegador no la ofrezca. Elige una foto del dispositivo: funciona igual.',
+  'label.error.cameraUnavailableHint':
+    'Puede que otra aplicación la esté usando, o que este navegador no la ofrezca. Elige una foto del dispositivo: funciona igual.',
   'label.error.permissionDenied': 'El navegador no nos ha dado permiso para la cámara.',
-  'label.error.permissionDeniedHint': 'Puedes concederlo desde el candado de la barra de direcciones, o elegir una foto del dispositivo.',
+  'label.error.permissionDeniedHint':
+    'Puedes concederlo desde el candado de la barra de direcciones, o elegir una foto del dispositivo.',
   'label.error.engineLoad': 'No hemos podido cargar el lector de texto.',
-  'label.error.engineLoadHint': 'Suele ser cosa de la conexión. Vuelve a tocar «Usar esta foto» para reintentarlo.',
+  'label.error.engineLoadHint':
+    'Suele ser cosa de la conexión. Vuelve a tocar «Usar esta foto» para reintentarlo.',
   'label.error.worker': 'El lector se ha interrumpido a mitad.',
-  'label.error.workerHint': 'Vuelve a tocar «Usar esta foto» con la misma imagen. Si se repite, prueba a repetir la foto.',
+  'label.error.workerHint':
+    'Vuelve a tocar «Usar esta foto» con la misma imagen. Si se repite, prueba a repetir la foto.',
   'label.error.unreadable': 'No hemos podido leer texto en esta foto.',
-  'label.error.unreadableHint': 'Repite la foto con más luz, más cerca y con la etiqueta lo más plana posible.',
+  'label.error.unreadableHint':
+    'Repite la foto con más luz, más cerca y con la etiqueta lo más plana posible.',
   'label.error.lowConfidence': 'La lectura ha salido demasiado confusa para enseñártela.',
-  'label.error.lowConfidenceHint': 'Suele pasar al fotografiar una pantalla, un envase entero o una tabla nutricional. Acerca la cámara a la lista de ingredientes, o elige una captura de pantalla desde el dispositivo.',
+  'label.error.lowConfidenceHint':
+    'Suele pasar al fotografiar una pantalla, un envase entero o una tabla nutricional. Acerca la cámara a la lista de ingredientes, o elige una captura de pantalla desde el dispositivo.',
   'label.error.noText': 'La foto se ha leído, pero no ha salido texto aprovechable.',
   'label.error.noTextHint': 'Repite la foto enfocando solo la lista de ingredientes.',
   'label.systemCamera': 'Hacer foto con la cámara del teléfono',
@@ -490,15 +523,19 @@ export const es = {
   'label.openCamera': 'Abrir cámara',
   'label.takePhoto': 'Tomar foto',
   'label.chooseFile': 'O elige una foto del dispositivo',
-  'label.cameraFallback': 'No hemos podido abrir la cámara aquí. Elige una foto del dispositivo y funciona igual.',
+  'label.cameraFallback':
+    'No hemos podido abrir la cámara aquí. Elige una foto del dispositivo y funciona igual.',
   'label.usePhoto': 'Usar esta foto',
   'label.retake': 'Repetir',
-  'label.processingHint': 'La primera vez tarda un poco más: el lector se descarga una sola vez y se queda guardado en el navegador.',
-  'label.editText': 'Puedes corregir el texto antes de continuar. La lectura automática se equivoca a veces.',
+  'label.processingHint':
+    'La primera vez tarda un poco más: el lector se descarga una sola vez y se queda guardado en el navegador.',
+  'label.editText':
+    'Puedes corregir el texto antes de continuar. La lectura automática se equivoca a veces.',
   'label.continueStep': 'Continuar',
   'label.matchesIntro': 'Encontramos estas coincidencias en el texto detectado.',
   'label.ocrMayErr': 'La lectura automática puede contener errores.',
-  'label.privacy': 'La foto no sale de tu dispositivo: el texto se lee aquí mismo y la imagen no se guarda.',
+  'label.privacy':
+    'La foto no sale de tu dispositivo: el texto se lee aquí mismo y la imagen no se guarda.',
   'label.engineNotice': 'Texto leído en tu dispositivo ({engine}).',
   'label.unavailable': 'Este dispositivo no puede leer etiquetas automáticamente.',
   'label.unavailableHint': 'Puedes escribir los ingredientes a mano y comparar igual.',
@@ -506,7 +543,8 @@ export const es = {
   'label.scanAgain': 'Leer otra etiqueta',
   'label.unmatched': 'Sin coincidencias en tu lista',
   'label.noAvoidList': 'Todavía no has marcado ningún alimento como Evitar.',
-  'label.noAvoidListHint': 'Cuando marques alimentos en el panel, la lectura de etiquetas los comparará con lo que leas.',
+  'label.noAvoidListHint':
+    'Cuando marques alimentos en el panel, la lectura de etiquetas los comparará con lo que leas.',
   'label.pasteText': 'Escribir el texto a mano',
   'label.pastePlaceholder': 'Ingredientes: …',
 
