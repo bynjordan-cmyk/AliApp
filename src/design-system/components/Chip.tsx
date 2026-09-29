@@ -7,6 +7,7 @@ import { Text } from './Text';
 export type ChipProps = {
   label: string;
   selected?: boolean;
+  disabled?: boolean;
   onPress?: () => void;
   tint?: string;
   /** Short text shown next to the colour so state is never colour-only (§21). */
@@ -14,7 +15,15 @@ export type ChipProps = {
   testID?: string;
 };
 
-export function Chip({ label, selected = false, onPress, tint, stateLabel, testID }: ChipProps) {
+export function Chip({
+  label,
+  selected = false,
+  disabled = false,
+  onPress,
+  tint,
+  stateLabel,
+  testID,
+}: ChipProps) {
   const content = (
     <View
       style={[
@@ -45,9 +54,10 @@ export function Chip({ label, selected = false, onPress, tint, stateLabel, testI
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={stateLabel ? `${label}, ${stateLabel}` : label}
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled }}
+      disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [styles.pressable, pressed && { opacity: 0.7 }]}
+      style={({ pressed }) => [styles.pressable, (pressed || disabled) && { opacity: 0.7 }]}
     >
       {content}
     </Pressable>

@@ -1,5 +1,7 @@
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Switch, View } from 'react-native';
+import { Platform, StyleSheet, Switch, View } from 'react-native';
 
 import {
   Button,
@@ -39,8 +41,11 @@ import { REMINDER_CATEGORIES, type ReminderCategory } from '@/types/domain';
  * a los demás cuidadores del hogar.
  */
 export default function ProfileScreen() {
+  const router = useRouter();
   const { t, locale, setLocale } = useI18n();
   const { signOut, profile } = useSession();
+  const [leaving, setLeaving] = useState(false);
+  const [signOutError, setSignOutError] = useState(false);
   const { household, baby, role, babies } = useActiveBaby();
   const journeys = useActiveJourneys(baby?.id ?? null);
 
@@ -66,14 +71,18 @@ export default function ProfileScreen() {
           <>
             <View style={styles.filaBebe}>
               <View style={[styles.avatar, { backgroundColor: surfaces.feeding.background }]}>
-                <Ionicons name="happy-outline" size={24} color={surfaces.feeding.ink} accessible={false} />
+                <Ionicons
+                  name="happy-outline"
+                  size={24}
+                  color={surfaces.feeding.ink}
+                  accessible={false}
+                />
               </View>
               <View style={styles.datos}>
                 <Text variant="subtitle">{baby.name}</Text>
                 {age ? (
                   <Text variant="caption" color={colors.textSecondary}>
-                    {age.months} {locale === 'es' ? 'meses' : 'months'} · {age.days}{' '}
-                    {locale === 'es' ? 'días' : 'days'}
+                    {t('profile.ageDays', { days: age.days })}
                   </Text>
                 ) : (
                   <Text variant="caption" color={colors.textSecondary}>
@@ -115,7 +124,9 @@ export default function ProfileScreen() {
         )}
       </Card>
 
-      {baby ? <BabyEditor baby={baby} /> : null}
+      {baby && (role === 'owner' || role === 'parent') ? (
+        <BabyEditor key={baby.id} baby={baby} />
+      ) : null}
 
       {/* Familia y cuidadores */}
       <Card>
@@ -128,6 +139,11 @@ export default function ProfileScreen() {
         ) : null}
         <Divider />
         <SectionHeader title={t('profile.caregivers')} />
+        <Button
+          label={t('caregivers.title')}
+          variant="secondary"
+          onPress={() => router.push('/caregivers')}
+        />
         <Text variant="caption" color={colors.textSecondary}>
           {profile?.display_name ?? ''}
         </Text>
@@ -145,13 +161,20 @@ export default function ProfileScreen() {
         <View style={styles.filaAjuste}>
           <Text>{t('reminders.pushEnabled')}</Text>
           <Switch
-            value={pushEnabled}
+            value={Platform.OS === 'web' ? false : pushEnabled}
+            disabled={Platform.OS === 'web' || saveSettings.isPending}
             accessibilityLabel={t('reminders.pushEnabled')}
             trackColor={{ true: colors.accent, false: colors.border }}
             onValueChange={(valor) => saveSettings.mutate({ pushEnabled: valor })}
           />
         </View>
 
+        {Platform.OS === 'web' ? <Text variant="caption">{t('reminders.webHint')}</Text> : null}
+        {saveSettings.isError || savePreference.isError ? (
+          <Text color={colors.error} accessibilityRole="alert">
+            {t('common.error')}
+          </Text>
+        ) : null}
         <Text variant="caption" color={colors.textSecondary}>
           {t('reminders.quietHours')} · {settings.data?.quiet_hours_start ?? '—'} →{' '}
           {settings.data?.quiet_hours_end ?? '—'}
@@ -169,9 +192,7 @@ export default function ProfileScreen() {
               key={category}
               label={t(`reminders.category.${category}` as 'reminders.category.feeding')}
               selected={estaActiva(category)}
-              onPress={() =>
-                savePreference.mutate({ category, enabled: !estaActiva(category) })
-              }
+              onPress={() => savePreference.mutate({ category, enabled: !estaActiva(category) })}
             />
           ))}
         </View>
@@ -217,13 +238,19 @@ export default function ProfileScreen() {
         </Text>
         <Divider />
         <SectionHeader title={t('profile.documents')} />
+        <Button
+          label={t('profile.documents')}
+          variant="secondary"
+          onPress={() => router.push('/documents')}
+        />
         <Text variant="caption" color={colors.textSecondary}>
           {t('profile.documentsHint')}
         </Text>
         <Divider />
         <SectionHeader title={t('profile.export')} />
+        <Button label={t('report.title')} onPress={() => router.push('/export')} />
         <Text variant="caption" color={colors.textSecondary}>
-          {t('profile.exportPlaceholder')}
+          {t('report.hint')}
         </Text>
         <Divider />
         <SectionHeader title={t('profile.deleteAccount')} />
@@ -232,7 +259,27 @@ export default function ProfileScreen() {
         </Text>
       </Card>
 
-      <Button variant="secondary" label={t('auth.signOut')} onPress={() => void signOut()} />
+      {signOutError ? (
+        <Text color={colors.error} accessibilityRole="alert">
+          {t('common.error')}
+        </Text>
+      ) : null}
+      <Button
+        variant="secondary"
+        label={t('auth.signOut')}
+        loading={leaving}
+        onPress={async () => {
+          setLeaving(true);
+          setSignOutError(false);
+          try {
+            await signOut();
+          } catch {
+            setSignOutError(true);
+          } finally {
+            setLeaving(false);
+          }
+        }}
+      />
 
       <Text variant="caption" color={colors.textSecondary}>
         {t('safety.notDiagnostic')}

@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import 'react-native-url-polyfill/auto';
@@ -24,7 +25,7 @@ export function getSupabaseClient(): AliappClient {
       autoRefreshToken: true,
       persistSession: true,
       // React Native no tiene callbacks de URL de navegador.
-      detectSessionInUrl: false,
+      detectSessionInUrl: Platform.OS === 'web',
     },
   });
 

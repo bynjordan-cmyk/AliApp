@@ -5,6 +5,85 @@
  */
 export const es = {
   'common.appName': 'AliApp',
+  'profile.ageDays': '{days} días de vida',
+  'reminders.webHint':
+    'En la web, tus recordatorios aparecen dentro de AliApp. No se enviarán avisos con la página cerrada.',
+  'documents.upload': 'Adjuntar PDF, JPG o PNG (máximo 5 MB)',
+  'documents.hint':
+    'Guarda documentos del bebé. Los miembros activos de tu familia podrán abrirlos mediante enlaces temporales.',
+  'documents.empty': 'Todavía no hay documentos',
+  'documents.open': 'Abrir documento',
+  'documents.remove': 'Retirar de la lista',
+  'documents.removeHint':
+    'Se ocultará de esta lista. Esta acción no elimina permanentemente el archivo almacenado.',
+  'documents.uploadError':
+    'No se pudo adjuntar. Usa un PDF, JPG o PNG de hasta 5 MB y comprueba tu conexión.',
+  'documents.webOnly': 'La carga de documentos está disponible en la versión web.',
+  'caregivers.title': 'Familia y cuidadores',
+  'caregivers.member': 'Miembro de la familia',
+  'caregivers.status.active': 'Activo',
+  'caregivers.status.invited': 'Pendiente',
+  'caregivers.status.revoked': 'Sin acceso',
+  'caregivers.invite': 'Invitar a alguien',
+  'caregivers.inviteHint':
+    'El código sirve una sola vez y vence en 7 días. Compártelo únicamente con la persona que quieres invitar. Podrá ver los registros de tu familia.',
+  'caregivers.generate': 'Crear invitación',
+  'caregivers.shareCode': 'Código para compartir',
+  'caregivers.expires': 'Vence el',
+  'caregivers.cancelInvite': 'Cancelar invitación',
+  'caregivers.join': 'Unirme con una invitación',
+  'caregivers.code': 'Código de invitación',
+  'caregivers.revoke': 'Retirar acceso',
+  'caregivers.revokeConfirm':
+    'Esta persona dejará de ver y registrar datos de la familia. Los registros que ya creó se conservarán.',
+  'caregivers.error':
+    'No se pudo completar. Comprueba la conexión, tus permisos y que el código siga vigente.',
+  'journeyForm.title': 'Crear proceso',
+  'journeyForm.hint':
+    'Registra un plan elegido por tu familia o indicado por un profesional. AliApp no propone cambios de alimentación.',
+  'journeyForm.invalid':
+    'Revisa las fechas (AAAA-MM-DD), el orden de revisión y los alimentos del proceso de exclusión.',
+  'journeyForm.noPermission': 'Necesitas un bebé seleccionado y permiso para gestionar procesos.',
+  'journeyForm.type': 'Tipo de proceso',
+  'journeyForm.start': 'Fecha de inicio (AAAA-MM-DD)',
+  'journeyForm.review': 'Revisión opcional (AAAA-MM-DD)',
+  'journeyForm.professional': 'Nombre del profesional (opcional)',
+  'journeyForm.targets': 'Alimentos del proceso',
+  'journeyForm.targetsHint':
+    'Añade solo lo que forma parte de tu plan. Selecciona a quién corresponde y qué acción ya fue decidida.',
+  'journeyForm.subject.baby': 'Bebé',
+  'journeyForm.subject.caregiver': 'Madre o cuidador',
+  'journeyForm.action.avoid': 'Exclusión indicada',
+  'journeyForm.action.introduce': 'Introducción indicada',
+  'journeyForm.action.maintain': 'Mantener según el plan',
+  'journeyForm.action.observe': 'Observar',
+  'journeyForm.confirmStatus': 'Cambiar el proceso a:',
+  'journeyForm.completed': 'Fecha de finalización (AAAA-MM-DD)',
+  'journeyForm.activate': 'Activar proceso',
+  'journeyForm.pause': 'Pausar proceso',
+  'journeyForm.complete': 'Completar proceso',
+  'journeyForm.cancel': 'Cancelar proceso',
+  'auth.forgot': 'Olvidé mi contraseña',
+  'auth.recoveryTitle': 'Recuperar acceso',
+  'auth.recoveryHint': 'Te enviaremos un enlace para elegir una contraseña nueva.',
+  'auth.sendRecovery': 'Enviar enlace',
+  'auth.recoverySent':
+    'Si existe una cuenta con ese correo, recibirás un enlace. Revisa también spam.',
+  'auth.newPassword': 'Nueva contraseña',
+  'auth.repeatPassword': 'Repite la contraseña',
+  'auth.passwordMismatch': 'Las contraseñas deben coincidir y tener al menos 8 caracteres.',
+  'auth.passwordChanged': 'Contraseña actualizada.',
+  'auth.recoveryExpired': 'El enlace ha caducado o no es válido. Solicita otro.',
+  'auth.confirmEmail': 'Revisa tu correo para confirmar la cuenta antes de entrar.',
+  'report.title': 'Exportar registros',
+  'report.from': 'Desde (AAAA-MM-DD)',
+  'report.to': 'Hasta (AAAA-MM-DD)',
+  'report.download': 'Descargar archivo JSON',
+  'report.invalid': 'Selecciona un rango de fechas válido.',
+  'report.hint':
+    'Exporta los registros accesibles del bebé seleccionado en este periodo. El archivo puede contener información sensible; compártelo solo con quien tú decidas.',
+  'report.native': 'La descarga de archivos está disponible en la versión web.',
+  'report.done': 'Archivo descargado.',
   'brand.signature': 'FOOD · ALLERGIES · BRIGHTER DAYS',
   'common.save': 'Guardar',
   'common.cancel': 'Cancelar',
@@ -371,8 +450,7 @@ export const es = {
   'profile.privacyHint':
     'Tus registros son privados y solo los ve quien pertenece a tu familia en AliApp.',
   'profile.documents': 'Documentos y planes',
-  'profile.documentsHint':
-    'Aquí podrás guardar los planes e informes que te dé tu profesional sanitario.',
+  'profile.documentsHint': 'Guarda aquí los planes e informes que te dé tu profesional sanitario.',
   'profile.deleteAccount': 'Eliminar cuenta',
   'profile.deleteAccountHint':
     'Podrás borrar tu cuenta y tus datos desde aquí en una próxima versión.',

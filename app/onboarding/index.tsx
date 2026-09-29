@@ -87,6 +87,11 @@ export default function OnboardingScreen() {
         <Text color={colors.textSecondary}>{t('safety.notDiagnostic')}</Text>
       </View>
 
+      <Button
+        variant="secondary"
+        label={t('caregivers.join')}
+        onPress={() => router.push('/caregivers')}
+      />
       <Card>
         <Controller
           control={control}

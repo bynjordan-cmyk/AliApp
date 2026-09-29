@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { Button, Card, Chip, Text, colors, spacing } from '@/design-system';
 import { useT } from '@/lib/i18n';
@@ -47,7 +47,7 @@ export function ReminderPrompt({
     <Card tone="info">
       <Text variant="bodyStrong">{t('reminders.askTitle')}</Text>
       <Text variant="caption" color={colors.textSecondary}>
-        {t('reminders.askHint')}
+        {t(Platform.OS === 'web' ? 'reminders.webHint' : 'reminders.askHint')}
       </Text>
 
       <View style={styles.opciones}>
@@ -59,6 +59,7 @@ export function ReminderPrompt({
                 ? `${minutos} ${t('common.minutesShort')}`
                 : `${minutos / 60} ${t('common.hoursShort')}`
             }
+            disabled={programar.isPending}
             onPress={() => {
               setAviso(null);
               programar.mutate(
@@ -72,7 +73,7 @@ export function ReminderPrompt({
                 },
                 {
                   onSuccess: () => setHecho(true),
-                  onError: () => setAviso(t('reminders.permissionNeeded')),
+                  onError: () => setAviso(t('common.error')),
                 },
               );
             }}

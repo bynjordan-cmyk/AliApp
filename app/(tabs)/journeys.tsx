@@ -1,7 +1,11 @@
+import { useRouter } from 'expo-router';
+import { can } from '@/features/caregivers/permissions';
+import { JourneyActions } from '@/features/journeys/JourneyActions';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import {
+  Button,
   Card,
   Chip,
   EmptyState,
@@ -31,7 +35,8 @@ type JourneyTab = 'list' | 'calendar';
  */
 export default function JourneysScreen() {
   const { t, locale } = useI18n();
-  const { baby } = useActiveBaby();
+  const { baby, membership } = useActiveBaby();
+  const router = useRouter();
   const [tab, setTab] = useState<JourneyTab>('list');
   const journeys = useJourneys(baby?.id ?? null);
 
@@ -48,9 +53,16 @@ export default function JourneysScreen() {
     <Screen>
       <PageHeader title={t('journeys.title')} />
       <BabySelector />
+      {can('journey.write', membership) ? (
+        <Button label={t('journeyForm.title')} onPress={() => router.push('/journey-new')} />
+      ) : null}
 
       <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-        <Chip label={t('journeys.active')} selected={tab === 'list'} onPress={() => setTab('list')} />
+        <Chip
+          label={t('journeys.active')}
+          selected={tab === 'list'}
+          onPress={() => setTab('list')}
+        />
         <Chip
           label={t('calendar.title')}
           selected={tab === 'calendar'}
@@ -94,6 +106,7 @@ export default function JourneysScreen() {
                   <Text variant="overline" color={colors.textSecondary}>
                     {t('journeys.started')}: {formatDate(journey.started_on, locale)}
                   </Text>
+                  <JourneyActions journey={journey} />
                 </Card>
               ))}
             </View>

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { View, type ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,6 +13,7 @@ import {
   useLayout,
 } from '@/design-system';
 import { useT } from '@/lib/i18n';
+import { useSession } from '@/features/auth/SessionProvider';
 
 /**
  * Arquitectura de información (§14): Hoy · Alimentación · Salud · Procesos ·
@@ -28,6 +29,8 @@ export default function TabsLayout() {
   const t = useT();
   const { isDesktop } = useLayout();
   const insets = useSafeAreaInsets();
+  const { session, loading } = useSession();
+  if (!loading && !session) return <Redirect href="/(auth)/sign-in" />;
 
   return (
     <Tabs

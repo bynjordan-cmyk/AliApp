@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import {
   createContext,
@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
   type ReactNode,
 } from 'react';
 
@@ -28,7 +29,7 @@ type SessionContextValue = {
   session: Session | null;
   profile: Profile | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, displayName: string) => Promise<void>;
+  signUp: (email: string, password: string, displayName: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -36,6 +37,8 @@ type SessionContextValue = {
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
+  const cache = useQueryClient();
+  const userId = useRef<string | null>(null);
   const configured = isSupabaseConfigured();
   const [loading, setLoading] = useState(configured);
   const [session, setSession] = useState<Session | null>(null);
@@ -62,13 +65,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const client = getSupabaseClient();
     let active = true;
 
-    client.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setSession(data.session);
-      setLoading(false);
-    });
+    client.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!active) return;
+        userId.current = data.session?.user.id ?? null;
+        setSession(data.session);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (active) {
+          setSession(null);
+          setLoading(false);
+        }
+      });
 
     const { data: subscription } = client.auth.onAuthStateChange((_event, nextSession) => {
+      const nextId = nextSession?.user.id ?? null;
+      if (nextId !== userId.current) cache.clear();
+      userId.current = nextId;
       setSession(nextSession);
     });
 
@@ -76,7 +91,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       active = false;
       subscription.subscription.unsubscribe();
     };
-  }, [configured]);
+  }, [configured, cache]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const client = getSupabaseClient();
@@ -86,18 +101,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const signUp = useCallback(async (email: string, password: string, displayName: string) => {
     const client = getSupabaseClient();
-    const { error } = await client.auth.signUp({
+    const { data, error } = await client.auth.signUp({
       email,
       password,
       options: { data: { display_name: displayName, locale: 'es' } },
     });
     if (error) throw new Error(error.message);
+    return Boolean(data.session);
   }, []);
 
   const signOut = useCallback(async () => {
     const client = getSupabaseClient();
-    await client.auth.signOut();
-  }, []);
+    const { error } = await client.auth.signOut();
+    if (error) throw error;
+    cache.clear();
+  }, [cache]);
 
   const value = useMemo<SessionContextValue>(
     () => ({ configured, loading, session, profile, signIn, signUp, signOut, refreshProfile }),
