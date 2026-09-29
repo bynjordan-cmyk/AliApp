@@ -1,4 +1,4 @@
-import { Image, View, type ImageStyle } from 'react-native';
+import { Image, View, useWindowDimensions, type ImageStyle } from 'react-native';
 
 import { useT } from '@/lib/i18n';
 import { colors, spacing, typography } from '../tokens';
@@ -51,6 +51,8 @@ export function BrandLogo({
   style,
 }: BrandLogoProps) {
   const t = useT();
+  const { width: viewportWidth } = useWindowDimensions();
+  height = Math.min(height, Math.max(32, (viewportWidth - 64) / 3.8));
 
   // Un eslogan ilegible es ruido: por debajo del mínimo se usa la versión corta.
   const efectiva = variant === 'full' && height < MIN_ALTURA_CON_ESLOGAN ? 'compact' : variant;

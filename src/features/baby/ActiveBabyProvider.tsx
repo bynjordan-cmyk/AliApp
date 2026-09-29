@@ -46,7 +46,8 @@ export function ActiveBabyProvider({ children }: { children: ReactNode }) {
 
   // Hogar y bebé activos son estado derivado: lo elegido por la usuaria, o el
   // primero disponible. Calcularlo en el render evita renders en cascada.
-  const householdId = selectedHouseholdId ?? households[0]?.id ?? null;
+  const householdId =
+    households.find((item) => item.id === selectedHouseholdId)?.id ?? households[0]?.id ?? null;
 
   const babiesQuery = useQuery({
     queryKey: queryKeys.babies(householdId ?? 'none'),
@@ -56,7 +57,7 @@ export function ActiveBabyProvider({ children }: { children: ReactNode }) {
 
   const babies = useMemo(() => babiesQuery.data ?? [], [babiesQuery.data]);
 
-  const babyId = selectedBabyId ?? babies[0]?.id ?? null;
+  const babyId = babies.find((item) => item.id === selectedBabyId)?.id ?? babies[0]?.id ?? null;
 
   const membersQuery = useQuery({
     queryKey: queryKeys.householdMembers(householdId ?? 'none'),

@@ -466,6 +466,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      household_invitations: {
+        Row: {
+          id: string;
+          household_id: string;
+          role: Database['public']['Enums']['member_role'];
+          token_hash: string;
+          expires_at: string;
+          created_by: string | null;
+          accepted_by: string | null;
+          accepted_at: string | null;
+          revoked_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          household_id: string;
+          role: Database['public']['Enums']['member_role'];
+          token_hash: string;
+          expires_at?: string;
+          created_by?: string | null;
+          accepted_by?: string | null;
+          accepted_at?: string | null;
+          revoked_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          household_id?: string;
+          role?: Database['public']['Enums']['member_role'];
+          token_hash?: string;
+          expires_at?: string;
+          created_by?: string | null;
+          accepted_by?: string | null;
+          accepted_at?: string | null;
+          revoked_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       household_members: {
         Row: {
           household_id: string;
@@ -981,11 +1020,27 @@ export type Database = {
       };
     };
     Functions: {
+      accept_household_invite: {
+        Args: Record<string, unknown>;
+        Returns: unknown;
+      };
       build_report: {
         Args: Record<string, unknown>;
         Returns: unknown;
       };
       create_household: {
+        Args: Record<string, unknown>;
+        Returns: unknown;
+      };
+      create_journey: {
+        Args: Record<string, unknown>;
+        Returns: unknown;
+      };
+      issue_household_invite: {
+        Args: Record<string, unknown>;
+        Returns: unknown;
+      };
+      revoke_household_invite: {
         Args: Record<string, unknown>;
         Returns: unknown;
       };
@@ -995,25 +1050,50 @@ export type Database = {
       diaper_type: 'urine' | 'stool' | 'both';
       episode_exposure_relation: 'manual' | 'temporal_candidate';
       episode_status: 'open' | 'resolved';
-      exposure_confidence_label: 'insufficient_data' | 'under_observation' | 'temporally_consistent' | 'inconsistent';
-      exposure_source_type: 'baby_food' | 'maternal_food' | 'breastfeed' | 'pumped_milk' | 'unknown' | 'formula';
+      exposure_confidence_label:
+        'insufficient_data' | 'under_observation' | 'temporally_consistent' | 'inconsistent';
+      exposure_source_type:
+        'baby_food' | 'maternal_food' | 'breastfeed' | 'pumped_milk' | 'unknown' | 'formula';
       feed_kind: 'breast' | 'formula' | 'pumped_milk';
-      feeding_stage: 'milk_only' | 'milk_and_early_solids' | 'complementary_feeding' | 'family_food' | 'custom';
-      food_status: 'unknown' | 'introducing' | 'observing' | 'tolerated' | 'avoid' | 'professional_supervision';
+      feeding_stage:
+        'milk_only' | 'milk_and_early_solids' | 'complementary_feeding' | 'family_food' | 'custom';
+      food_status:
+        | 'unknown'
+        | 'introducing'
+        | 'observing'
+        | 'tolerated'
+        | 'avoid'
+        | 'professional_supervision';
       food_status_source: 'family' | 'professional_plan' | 'system_summary';
       food_subject_type: 'baby' | 'caregiver';
       journey_indicated_by: 'family' | 'pediatrician' | 'allergist' | 'dietitian' | 'other';
       journey_status: 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
       journey_target_action: 'avoid' | 'introduce' | 'maintain' | 'observe';
       journey_target_subject: 'baby' | 'caregiver';
-      journey_type: 'tracking' | 'introduction' | 'observation' | 'exclusion' | 'reintroduction' | 'known_allergy';
+      journey_type:
+        | 'tracking'
+        | 'introduction'
+        | 'observation'
+        | 'exclusion'
+        | 'reintroduction'
+        | 'known_allergy';
       meal_type: 'breakfast' | 'lunch' | 'snack' | 'dinner' | 'other';
       media_category: 'skin' | 'diaper' | 'food' | 'plan' | 'other';
-      media_entity_type: 'symptom' | 'reaction_episode' | 'diaper_event' | 'food_entry' | 'journey' | 'baby';
+      media_entity_type:
+        'symptom' | 'reaction_episode' | 'diaper_event' | 'food_entry' | 'journey' | 'baby';
       media_type: 'photo' | 'document';
       member_role: 'owner' | 'parent' | 'caregiver' | 'professional_viewer';
       member_status: 'invited' | 'active' | 'revoked';
-      reminder_category: 'feeding' | 'breastfeeding' | 'symptom_followup' | 'open_episode' | 'medication' | 'journey_review' | 'reintroduction' | 'daily_summary' | 'household_updates';
+      reminder_category:
+        | 'feeding'
+        | 'breastfeeding'
+        | 'symptom_followup'
+        | 'open_episode'
+        | 'medication'
+        | 'journey_review'
+        | 'reintroduction'
+        | 'daily_summary'
+        | 'household_updates';
       reminder_status: 'scheduled' | 'done' | 'snoozed' | 'cancelled';
       stool_amount: 'scant' | 'moderate' | 'large';
     };
@@ -1029,5 +1109,4 @@ export type TablesUpdate<T extends keyof Database['public']['Tables']> =
   Database['public']['Tables'][T]['Update'];
 export type Views<T extends keyof Database['public']['Views']> =
   Database['public']['Views'][T]['Row'];
-export type Enums<T extends keyof Database['public']['Enums']> =
-  Database['public']['Enums'][T];
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T];

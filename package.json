@@ -18,6 +18,8 @@
     "db:stop": "./scripts/db-local.sh stop",
     "db:psql": "./scripts/db-local.sh psql",
     "db:types": "node scripts/gen-db-types.mjs",
+    "db:verify": "node scripts/verify-db.mjs",
+    "build:web": "expo export --platform web",
     "format": "prettier --write .",
     "test:ocr:web": "node scripts/ocr-web-check.mjs",
     "ocr:assets": "node scripts/prepare-ocr-assets.mjs",

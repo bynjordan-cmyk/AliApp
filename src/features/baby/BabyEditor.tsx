@@ -22,7 +22,7 @@ import { FEEDING_STAGES, suggestStageFromAge } from './feeding-stage';
  * por edad: AliApp no decide cuándo empieza un bebé con sólidos.
  */
 export function BabyEditor({ baby }: { baby: Baby }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
 
   const [birthDate, setBirthDate] = useState(baby.birth_date ?? '');
@@ -51,8 +51,7 @@ export function BabyEditor({ baby }: { baby: Baby }) {
 
       {edad ? (
         <Text variant="caption" color={colors.textSecondary}>
-          {edad.months} {locale === 'es' ? 'meses' : 'months'} · {edad.days}{' '}
-          {locale === 'es' ? 'días' : 'days'}
+          {t('profile.ageDays', { days: edad.days })}
         </Text>
       ) : null}
 
@@ -87,7 +86,7 @@ export function BabyEditor({ baby }: { baby: Baby }) {
       <SectionHeader title={t('profile.milkSources')} />
       {(
         [
-          ['breastfeeding', breastfeeding, setBreastfeeding],
+          ['breastfeed', breastfeeding, setBreastfeeding],
           ['formula', formula, setFormula],
           ['pumped_milk', pumped, setPumped],
         ] as const
@@ -123,7 +122,9 @@ export function BabyEditor({ baby }: { baby: Baby }) {
             formula,
             pumpedMilk: pumped,
           })
-            .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.babies(baby.household_id) }))
+            .then(() =>
+              queryClient.invalidateQueries({ queryKey: queryKeys.babies(baby.household_id) }),
+            )
             .catch((causa: Error) => setError(causa.message))
             .finally(() => setGuardando(false));
         }}

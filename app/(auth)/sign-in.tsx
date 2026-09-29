@@ -23,6 +23,7 @@ export default function SignInScreen() {
   const { signIn, signUp } = useSession();
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const { control, handleSubmit, formState, clearErrors } = useForm<Credentials>({
     resolver: zodResolver(credentialsSchema),
@@ -31,11 +32,16 @@ export default function SignInScreen() {
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
+    setNotice(null);
     try {
       if (mode === 'sign-in') {
         await signIn(values.email, values.password);
       } else {
-        await signUp(values.email, values.password, values.displayName ?? '');
+        const signedIn = await signUp(values.email, values.password, values.displayName ?? '');
+        if (!signedIn) {
+          setNotice(t('auth.confirmEmail'));
+          return;
+        }
       }
       router.replace('/');
     } catch (cause) {
@@ -53,6 +59,7 @@ export default function SignInScreen() {
         <Text color={colors.textSecondary}>{t('auth.signInSubtitle')}</Text>
       </View>
 
+      {notice ? <Text accessibilityRole="alert">{notice}</Text> : null}
       <Card>
         {mode === 'sign-up' ? (
           <Controller
@@ -122,8 +129,10 @@ export default function SignInScreen() {
             setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in');
             clearErrors();
             setError(null);
+            setNotice(null);
           }}
         />
+        <Button variant="ghost" label={t('auth.forgot')} onPress={() => router.push('/recover')} />
       </Card>
 
       <Text variant="caption" color={colors.textSecondary}>

@@ -4,7 +4,7 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: ['**/*.test.ts', '**/*.test.tsx'],
-  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/tests/rls/'],
+  testPathIgnorePatterns: ['[/\\\\]node_modules[/\\\\]', '[/\\\\]tests[/\\\\]rls[/\\\\]'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
