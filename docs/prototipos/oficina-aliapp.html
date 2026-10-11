@@ -1,0 +1,738 @@
+<title>Oficina AliApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: la oficina isométrica manda a la izquierda; el panel del equipo vive a la derecha y baja debajo en móvil.
+   Un único aspecto nocturno de videojuego, a propósito: no cambia con el tema. */
+:root{
+  --night:#151728;
+  --panel:#1E2138;
+  --panel-2:#272B47;
+  --line:#363B60;
+  --ink:#EFE8D8;
+  --muted:#A3A5C2;
+  --accent:#FFC15E;
+  --ok:#62D394; --info:#7AB2FF; --meet:#BC97FF; --warn:#F0A060; --bad:#FF7A7A; --talk:#5ED6D0;
+  --font-display:"Pixelify Sans", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.45}
+*{box-sizing:border-box}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{max-width:1320px;margin:0 auto;padding-block:14px 24px;padding-inline:16px;display:flex;flex-direction:column;gap:14px}
+
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-right:auto}
+.brand h1{font-family:var(--font-display);font-weight:600;font-size:26px;letter-spacing:.02em;margin:0;line-height:1}
+.chip{font-size:12px;color:var(--night);background:var(--accent);padding:3px 8px;border-radius:3px;font-weight:600;letter-spacing:.02em}
+.clock{font-family:var(--font-display);font-size:22px;font-variant-numeric:tabular-nums;color:var(--accent);min-width:64px;text-align:right}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:6px 12px;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--night);border-color:var(--accent);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{background:var(--panel-2);border:0;padding:6px 10px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--night);font-weight:600}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}}
+
+.stage-wrap{display:flex;flex-direction:column;gap:8px;min-width:0}
+.stage{position:relative;width:100%;aspect-ratio:420/280;max-width:100%;background:radial-gradient(ellipse at 50% 40%, #222645 0%, var(--night) 70%);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;cursor:default;touch-action:manipulation}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:12.5px;align-items:center}
+.legend .hint{margin-left:auto}
+@media (max-width:600px){.legend .hint{margin-left:0;width:100%}}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.s-ok{--c:var(--ok)} .s-info{--c:var(--info)} .s-meet{--c:var(--meet)} .s-warn{--c:var(--warn)} .s-bad{--c:var(--bad)} .s-talk{--c:var(--talk)}
+.dot{background:var(--c)}
+
+.panel{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}
+.card h2{font-family:var(--font-display);font-weight:400;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+
+.team{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.member{width:100%;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:2px 10px;align-items:center;text-align:left;background:transparent;border:1px solid transparent;border-radius:4px;padding:6px}
+.member:hover{background:var(--panel-2)}
+.member[aria-current="true"]{background:var(--panel-2);border-color:var(--line)}
+.avatar{grid-row:span 2;width:30px;height:30px;border-radius:4px;display:grid;place-items:center;font-family:var(--font-display);font-weight:600;color:var(--night);font-size:15px}
+.m-name{font-weight:600}
+.m-role{color:var(--muted);font-weight:400;font-size:12.5px;margin-left:4px}
+.m-now{grid-column:2 / 4;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:3px;color:var(--c);background:color-mix(in srgb, var(--c) 16%, transparent);white-space:nowrap}
+
+.detail-head{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.detail-head .avatar{width:40px;height:40px;font-size:19px;grid-row:auto}
+.detail-head h3{margin:0;font-family:var(--font-display);font-weight:600;font-size:20px;line-height:1.1}
+.detail-head p{margin:0;color:var(--muted);font-size:13px}
+.detail-head .pill{margin-left:auto}
+.desc{margin:0 0 8px;max-width:60ch}
+.tools{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px;padding:0;list-style:none}
+.tools li{font-size:12px;background:var(--panel-2);border:1px solid var(--line);padding:2px 7px;border-radius:3px;font-family:ui-monospace,"SFMono-Regular",Menlo,monospace}
+.now{background:var(--panel-2);border-radius:4px;padding:8px 10px;margin-bottom:10px;font-size:13.5px}
+.now b{font-family:var(--font-display);font-weight:400;color:var(--muted);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;display:block}
+form.assign{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+form.assign label{font-size:12.5px;color:var(--muted)}
+.assign-row{display:flex;gap:6px}
+.assign-row input{flex:1;min-width:0;background:var(--night);border:1px solid var(--line);border-radius:4px;padding:7px 9px}
+.assign-row input::placeholder{color:#6f7194}
+.sub{font-size:12px;color:var(--muted);margin:8px 0 4px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--font-display)}
+.mini{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.mini li{display:flex;gap:8px;min-width:0}
+.mini time,.feed time{font-variant-numeric:tabular-nums;color:var(--muted);flex:none;font-size:12px;padding-top:1px}
+.mini .empty{color:var(--muted);font-style:italic}
+
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto;font-size:13px}
+.feed li{display:flex;gap:8px;min-width:0}
+.feed li span{min-width:0}
+.feed .who{font-weight:600}
+.feed li.done span::before{content:"✓ ";color:var(--ok);font-weight:700}
+.feed li.new{animation:fade 600ms ease-out}
+@keyframes fade{from{background:color-mix(in srgb, var(--accent) 18%, transparent)}to{background:transparent}}
+@media (prefers-reduced-motion:reduce){.feed li.new{animation:none}}
+.note{color:var(--muted);font-size:12.5px;margin:0}
+</style>
+
+<div class="app">
+  <header>
+    <div class="brand">
+      <h1>Oficina AliApp</h1>
+      <span class="chip">Prototipo · datos simulados</span>
+    </div>
+    <div class="clock" id="clock" aria-label="Hora de la oficina">09:00</div>
+    <div class="controls">
+      <button class="btn" id="pause" type="button">Pausar</button>
+      <div class="seg" role="group" aria-label="Velocidad">
+        <button type="button" data-speed="1" aria-pressed="true">1×</button>
+        <button type="button" data-speed="2" aria-pressed="false">2×</button>
+        <button type="button" data-speed="4" aria-pressed="false">4×</button>
+      </div>
+      <button class="btn primary" id="meeting" type="button">Convocar reunión</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="stage-wrap">
+      <div class="stage" id="stage"><canvas id="scene" aria-label="Oficina con cinco agentes trabajando"></canvas></div>
+      <div class="legend">
+        <span class="s-ok"><i class="dot"></i>Trabajando</span>
+        <span class="s-info"><i class="dot"></i>En camino</span>
+        <span class="s-talk"><i class="dot"></i>Hablando</span>
+        <span class="s-meet"><i class="dot"></i>Reunión</span>
+        <span class="s-warn"><i class="dot"></i>Pausa</span>
+        <span class="s-bad"><i class="dot"></i>Atascado</span>
+        <span class="hint">Toca un personaje para ver qué hace</span>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <section class="card">
+        <h2>Equipo</h2>
+        <ul class="team" id="team"></ul>
+      </section>
+      <section class="card" id="detail"></section>
+      <section class="card">
+        <h2>Actividad</h2>
+        <ol class="feed" id="feed"></ol>
+      </section>
+      <p class="note">Los agentes de este prototipo aún no están conectados a GitHub, Supabase ni Vercel. Las tareas, cifras y conversaciones son de ejemplo.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---------- Mundo ----------
+  const W = 14, H = 11, TW = 16, TH = 8, WALL = 52;
+  const LW = 420, LH = 280, OX = 10 + H * 16, OY = 64;
+  const g = (x, y, z = 0) => [OX + (x - y) * TW, OY + (x + y) * TH - z];
+
+  const STATUS = {
+    'Trabajando': { cls: 's-ok', color: '#62D394' },
+    'En camino':  { cls: 's-info', color: '#7AB2FF' },
+    'Hablando':   { cls: 's-talk', color: '#5ED6D0' },
+    'Reunión':    { cls: 's-meet', color: '#BC97FF' },
+    'Pausa':      { cls: 's-warn', color: '#F0A060' },
+    'Atascado':   { cls: 's-bad', color: '#FF7A7A' },
+  };
+
+  const AGENTS = [
+    { id: 'vera', name: 'Vera', role: 'Guardiana de textos', shirt: '#E8665A', hair: '#3B2416', skin: '#F1C6A5', long: true, desk: [2, 2],
+      desc: 'Revisa que nada de lo que dice AliApp diagnostique, atribuya causas ni hable de dosis.',
+      tools: ['locales es/en', 'safety-boundaries.md', 'PRs de GitHub'],
+      steps: ['Leyendo es.json (412 cadenas)', 'Comparando con safety-boundaries.md', 'Revisando en.json contra es.json', 'Sin frases de causalidad. Todo en orden', 'Revisando el PR de Recordatorios'],
+      stuck: 'Esperando el PR de Nora' },
+    { id: 'bruno', name: 'Bruno', role: 'Base de datos', shirt: '#4F8FE0', hair: '#1E1B1A', skin: '#C98E66', long: false, desk: [6, 2],
+      desc: 'Escribe migraciones, vigila las políticas RLS y regenera los tipos.',
+      tools: ['Supabase', 'migraciones', 'RLS', 'db:types'],
+      steps: ['Revisando políticas RLS', 'Probando la migración en local', 'npm run db:types', 'Avisos de Supabase: 0 críticos', 'Revisando índices de occurred_at'],
+      stuck: 'Esperando acceso a Supabase' },
+    { id: 'lia', name: 'Lía', role: 'Pruebas y CI', shirt: '#5CC48A', hair: '#C9772E', skin: '#F5D2B5', long: true, desk: [10, 2],
+      desc: 'Pasa typecheck, lint y las pruebas antes de cada PR, y mantiene el CI en verde.',
+      tools: ['typecheck', 'lint', 'test:all', 'GitHub Actions'],
+      steps: ['npm run typecheck', 'npm run lint', 'test:all · 214 pruebas', 'CI en verde en la rama', 'Una prueba de RLS falló, investigando'],
+      stuck: 'CI en cola en GitHub' },
+    { id: 'teo', name: 'Teo', role: 'Despliegue', shirt: '#F0B23E', hair: '#6B4428', skin: '#E2A980', long: false, desk: [2, 6],
+      desc: 'Vigila los despliegues de Vercel y avisa si aparecen errores.',
+      tools: ['Vercel', 'logs', 'vistas previas'],
+      steps: ['Leyendo logs de Vercel', 'Vista previa desplegada', 'Sin errores en las últimas 24 h', 'Revisando el manifiesto del OCR'],
+      stuck: 'Esperando la migración de Bruno' },
+    { id: 'nora', name: 'Nora', role: 'Constructora', shirt: '#A57BE8', hair: '#141218', skin: '#8D5B3E', long: false, bun: true, desk: [6, 6],
+      desc: 'Construye las fases pendientes: Recordatorios y Ali Capture.',
+      tools: ['Expo', 'React Native', 'src/features'],
+      steps: ['Fase 6 · pantalla de Recordatorios', 'Escribiendo textos en es.json', 'Ali Capture · confirmar antes de guardar', 'Abriendo PR para revisión'],
+      stuck: 'Esperando revisión de Vera' },
+  ];
+
+  const HANDOFFS = [
+    { from: 'nora', to: 'vera', ask: '¿Me revisas los textos de Recordatorios?', reply: 'Voy, dame 5 minutos', follow: 'Revisar textos de Recordatorios' },
+    { from: 'nora', to: 'lia', ask: 'El PR de Ali Capture está listo', reply: 'Lanzo las pruebas', follow: 'Probar el PR de Ali Capture' },
+    { from: 'lia', to: 'bruno', ask: 'Falla una prueba de RLS de cuidadores', reply: 'Lo miro ahora', follow: 'Arreglar la política RLS de cuidadores' },
+    { from: 'bruno', to: 'teo', ask: 'Migración lista para desplegar', reply: 'La subo a la vista previa', follow: 'Desplegar la migración en vista previa' },
+    { from: 'vera', to: 'nora', ask: 'Cambia «es seguro» por un hecho medible', reply: 'Hecho, gracias', follow: 'Corregir el texto que marcó Vera' },
+    { from: 'teo', to: 'lia', ask: 'La vista previa da un 500 en /label-scan', reply: 'Reproduzco el fallo', follow: 'Reproducir el error 500 de label-scan' },
+  ];
+
+  const MEETING_LINES = ['Hoy toca la fase 6: Recordatorios', 'CI en verde desde ayer', 'Supabase sin avisos críticos', 'Recordad: nada de diagnósticos en los textos', '¿Quién revisa el PR de Ali Capture?', 'Lo reviso yo', 'La vista previa va bien'];
+
+  // Muebles y casillas bloqueadas
+  const blocked = new Set();
+  const key = (x, y) => y * W + x;
+  const block = (x, y, w, d) => { for (let i = x; i < x + w; i++) for (let j = y; j < y + d; j++) blocked.add(key(i, j)); };
+
+  AGENTS.forEach(a => block(a.desk[0], a.desk[1], 2, 1));
+  block(9, 6, 3, 2);          // mesa de reuniones
+  block(12, 0, 2, 1);         // cafetera y fuente de agua
+  block(7, 0, 2, 1);          // estantería
+  block(0, 7, 1, 2);          // sofá
+  [[0, 0], [13, 4], [0, 10], [13, 10]].forEach(([x, y]) => block(x, y, 1, 1)); // plantas
+
+  const MEET_SPOTS = [[8, 6], [8, 7], [12, 6], [12, 7], [10, 8]];
+  const COFFEE_SPOTS = [[12, 1], [13, 1]];
+
+  // ---------- Estado ----------
+  let simT = 0, clockMin = 9 * 60, speed = 1, paused = false;
+  let selected = 'vera';
+  let nextMeeting = 70, meetingLineAt = 0, inMeeting = false;
+  const feed = [];
+
+  const agents = AGENTS.map((d, i) => {
+    const seat = { x: d.desk[0] + 1, y: d.desk[1] + 1.45 };
+    return Object.assign({}, d, {
+      seat, seatTile: [d.desk[0], d.desk[1] + 1],
+      visitTile: [d.desk[0] + 1, d.desk[1] + 2], visitPt: [d.desk[0] + 1.5, d.desk[1] + 2.45],
+      x: seat.x, y: seat.y, plan: [], cur: null, path: [],
+      status: 'Trabajando', text: d.steps[0], textAt: -10, stepIdx: i % d.steps.length,
+      queue: [], log: [], seated: true, back: true, left: false, moving: false, walkPhase: 0,
+    });
+  });
+  const byId = Object.fromEntries(agents.map(a => [a.id, a]));
+
+  const fmt = m => { const h = Math.floor(m / 60) % 24, mm = Math.floor(m % 60); return String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0'); };
+
+  function say(a, text) { a.text = text; a.textAt = simT; }
+  function addFeed(a, text, kind) {
+    const e = { t: fmt(clockMin), id: a ? a.id : null, text, kind };
+    feed.unshift(e); if (feed.length > 40) feed.pop();
+    if (a) { a.log.unshift(e); if (a.log.length > 8) a.log.pop(); }
+    renderFeedItem(e);
+  }
+
+  // ---------- Caminos ----------
+  const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  function bfs(sx, sy, tx, ty) {
+    if (sx === tx && sy === ty) return [];
+    const prev = new Map([[key(sx, sy), -1]]); const q = [[sx, sy]];
+    while (q.length) {
+      const [x, y] = q.shift();
+      if (x === tx && y === ty) break;
+      for (const [dx, dy] of DIRS) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const k = key(nx, ny);
+        if (prev.has(k) || (blocked.has(k) && !(nx === tx && ny === ty))) continue;
+        prev.set(k, key(x, y)); q.push([nx, ny]);
+      }
+    }
+    if (!prev.has(key(tx, ty))) return [];
+    const out = []; let k = key(tx, ty);
+    while (k !== key(sx, sy)) { out.unshift([k % W + 0.5, Math.floor(k / W) + 0.5]); k = prev.get(k); }
+    return out;
+  }
+
+  // ---------- Planes ----------
+  const go = (tile, pt, text) => ({ type: 'go', tile, pt, text });
+  const act = (status, text, dur, log, kind) => ({ type: 'do', status, text, dur, log, kind });
+  const call = fn => ({ type: 'call', fn });
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const toSeat = a => go(a.seatTile, [a.seat.x, a.seat.y], 'Vuelvo a mi mesa');
+
+  function think(a) {
+    if (a.queue.length) {
+      const t = a.queue.shift();
+      a.plan.push(toSeat(a),
+        act('Trabajando', 'Empiezo: ' + t, 3.5, 'Empieza: ' + t),
+        act('Trabajando', t, rnd(7, 10)),
+        act('Trabajando', 'Terminado: ' + t, 3, 'Terminado: ' + t, 'done'));
+      return;
+    }
+    const r = Math.random();
+    const mine = HANDOFFS.filter(h => h.from === a.id);
+    if (r < 0.55) {
+      const s = a.steps[a.stepIdx++ % a.steps.length];
+      a.plan.push(toSeat(a), act('Trabajando', s, rnd(6, 11), Math.random() < 0.5 ? s : null));
+    } else if (r < 0.7) {
+      const [cx, cy] = COFFEE_SPOTS[Math.floor(Math.random() * COFFEE_SPOTS.length)];
+      a.plan.push(go([cx, cy], [cx + 0.5, cy + 0.6], 'Voy a por un café'), act('Pausa', 'Un café y vuelvo', rnd(4, 6), 'Pausa para el café'), toSeat(a));
+    } else if (r < 0.88 && mine.length) {
+      const h = mine[Math.floor(Math.random() * mine.length)];
+      const b = byId[h.to];
+      a.plan.push(
+        go(b.visitTile, b.visitPt, 'Voy a ver a ' + b.name),
+        act('Hablando', h.ask, 3.2, '→ ' + b.name + ': ' + h.ask),
+        call(() => { say(b, h.reply); addFeed(b, '→ ' + a.name + ': ' + h.reply); if (b.queue.length < 3) b.queue.push(h.follow); }),
+        act('Hablando', h.ask, 1.6),
+        toSeat(a));
+    } else {
+      a.plan.push(toSeat(a), act('Atascado', a.stuck, rnd(6, 9), a.stuck));
+    }
+  }
+
+  function startAction(a, c) {
+    if (c.type === 'go') {
+      const sx = Math.max(0, Math.min(W - 1, Math.floor(a.x))), sy = Math.max(0, Math.min(H - 1, Math.floor(a.y)));
+      a.path = bfs(sx, sy, c.tile[0], c.tile[1]);
+      a.path.push(c.pt);
+      a.seated = false;
+      a.status = 'En camino';
+      if (c.text && !(Math.abs(a.x - c.pt[0]) < 0.05 && Math.abs(a.y - c.pt[1]) < 0.05)) say(a, c.text);
+    } else if (c.type === 'do') {
+      c.left = c.dur;
+      a.status = c.status; say(a, c.text);
+      a.seated = Math.abs(a.x - a.seat.x) < 0.05 && Math.abs(a.y - a.seat.y) < 0.05;
+      if (a.seated) { a.back = true; a.left = false; }
+      if (c.log) addFeed(a, c.log, c.kind);
+    }
+  }
+
+  function update(a, dt) {
+    if (!a.cur) {
+      if (!a.plan.length) think(a);
+      a.cur = a.plan.shift();
+      startAction(a, a.cur);
+    }
+    const c = a.cur;
+    if (c.type === 'go') {
+      const sp = 2.4 * dt;
+      let budget = sp;
+      while (budget > 0 && a.path.length) {
+        const [tx, ty] = a.path[0];
+        const dx = tx - a.x, dy = ty - a.y, d = Math.hypot(dx, dy);
+        if (d > 0.001) { a.left = (dx - dy) < -0.01 ? true : (dx - dy) > 0.01 ? false : a.left; a.back = (dx + dy) < 0; }
+        if (d <= budget) { a.x = tx; a.y = ty; a.path.shift(); budget -= d; }
+        else { a.x += dx / d * budget; a.y += dy / d * budget; budget = 0; }
+      }
+      a.moving = a.path.length > 0;
+      a.walkPhase += dt;
+      if (!a.path.length) { a.moving = false; a.cur = null; }
+    } else if (c.type === 'do') {
+      c.left -= dt; if (c.left <= 0) a.cur = null;
+    } else if (c.type === 'call') {
+      c.fn(); a.cur = null;
+    }
+  }
+
+  function startMeeting() {
+    if (inMeeting) return;
+    inMeeting = true;
+    addFeed(null, 'Reunión diaria en la mesa grande');
+    agents.forEach((a, i) => {
+      const [mx, my] = MEET_SPOTS[i];
+      a.plan = [go([mx, my], [mx + 0.5, my + 0.5], 'Voy a la reunión'), act('Reunión', 'Reunión diaria', 12), toSeat(a)];
+      a.cur = null;
+    });
+    meetingLineAt = simT + 4;
+  }
+
+  function tick(dt) {
+    simT += dt; clockMin += dt;
+    agents.forEach(a => update(a, dt));
+    const meeting = agents.filter(a => a.status === 'Reunión');
+    if (inMeeting && meeting.length && simT > meetingLineAt) {
+      const a = meeting[Math.floor(Math.random() * meeting.length)];
+      say(a, MEETING_LINES[Math.floor(Math.random() * MEETING_LINES.length)]);
+      meetingLineAt = simT + 2.2;
+    }
+    if (inMeeting && !meeting.length && agents.every(a => !a.plan.some(p => p.status === 'Reunión'))) {
+      inMeeting = false; nextMeeting = simT + 180;
+      addFeed(null, 'Reunión terminada, cada uno a su mesa');
+    }
+    if (!inMeeting && simT > nextMeeting) startMeeting();
+  }
+
+  // ---------- Dibujo ----------
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const off = document.createElement('canvas'); off.width = LW; off.height = LH;
+  const o = off.getContext('2d');
+  let S = 1, offX = 0, offY = 0, dpr = 1;
+
+  function poly(pts, color) { o.fillStyle = color; o.beginPath(); o.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) o.lineTo(pts[i][0], pts[i][1]); o.closePath(); o.fill(); }
+  function box(x, y, w, d, h, z, top, left, right) {
+    poly([g(x, y + d, z), g(x + w, y + d, z), g(x + w, y + d, z + h), g(x, y + d, z + h)], left);
+    poly([g(x + w, y, z), g(x + w, y + d, z), g(x + w, y + d, z + h), g(x + w, y, z + h)], right);
+    poly([g(x, y, z + h), g(x + w, y, z + h), g(x + w, y + d, z + h), g(x, y + d, z + h)], top);
+  }
+  const rightWallRect = (a, b, z1, z2, c) => poly([g(a, 0, z1), g(b, 0, z1), g(b, 0, z2), g(a, 0, z2)], c);
+  const leftWallRect = (a, b, z1, z2, c) => poly([g(0, a, z1), g(0, b, z1), g(0, b, z2), g(0, a, z2)], c);
+  const R = (x, y, w, h, c) => { o.fillStyle = c; o.fillRect(x, y, w, h); };
+
+  function drawRoom(t) {
+    // suelo
+    poly([g(0, 0), g(W, 0), g(W, H), g(0, H)], '#B47C4B');
+    for (let x = 0; x < W; x++) for (let y = 0; y < H; y++)
+      poly([g(x, y), g(x + 1, y), g(x + 1, y + 1), g(x, y + 1)], (x + y) % 2 ? '#C58D58' : '#BC8450');
+    // alfombra bajo la mesa
+    poly([g(8, 5), g(13, 5), g(13, 9), g(8, 9)], '#3E4F8C');
+    poly([g(8.3, 5.3), g(12.7, 5.3), g(12.7, 8.7), g(8.3, 8.7)], '#4A5DA0');
+    // paredes
+    poly([g(0, 0), g(0, H), g(0, H, WALL), g(0, 0, WALL)], '#8592C2');
+    poly([g(0, 0), g(W, 0), g(W, 0, WALL), g(0, 0, WALL)], '#A0ACD9');
+    poly([g(0, 0), g(0, H), g(0, H, 3), g(0, 0, 3)], '#5D6797');
+    poly([g(0, 0), g(W, 0), g(W, 0, 3), g(0, 0, 3)], '#6F7AAC');
+    poly([g(0, 0, WALL), g(0, H, WALL), g(-0.3, H, WALL), g(-0.3, 0, WALL)], '#C9D0EE');
+    poly([g(0, 0, WALL), g(W, 0, WALL), g(W, -0.3, WALL), g(0, -0.3, WALL)], '#DCE1F5');
+    // ventanas con cielo de mañana
+    [[1, 3.2], [4.2, 6.4], [9.4, 11.4]].forEach(([a, b], i) => {
+      rightWallRect(a - 0.1, b + 0.1, 15, 45, '#E9EDFA');
+      rightWallRect(a, b, 17, 43, '#8FCBF2');
+      rightWallRect(a, b, 17, 25, '#B5DDF6');
+      const cx = a + ((t * 0.02 + i * 0.7) % 1) * (b - a - 0.6);
+      rightWallRect(cx, cx + 0.6, 34, 37, '#FFFFFF');
+      rightWallRect((a + b) / 2 - 0.04, (a + b) / 2 + 0.04, 17, 43, '#E9EDFA');
+    });
+    // pizarra con el sprint
+    leftWallRect(3.4, 6.6, 15, 43, '#5D6797');
+    leftWallRect(3.5, 6.5, 16, 42, '#F6F7FB');
+    [['#E8665A', 37, 1.6], ['#4F8FE0', 32, 2.2], ['#5CC48A', 27, 1.2], ['#A57BE8', 22, 1.9]].forEach(([c, z, len]) => {
+      leftWallRect(3.8, 3.8 + len, z, z + 1.5, c);
+    });
+    leftWallRect(5.9, 6.2, 22, 38, '#FFC15E');
+    // cuadro con el corazón de AliApp
+    leftWallRect(8.2, 9.8, 22, 40, '#3B2E4F');
+    leftWallRect(8.35, 9.65, 24, 38, '#FFC15E');
+    leftWallRect(8.75, 9.25, 28, 34, '#E8665A');
+  }
+
+  function drawables(t) {
+    const list = [];
+    agents.forEach(a => {
+      const [dx, dy] = a.desk;
+      list.push({ k: dx + dy + 1.5, draw: () => {
+        box(dx, dy, 2, 1, 14, 0, '#EBD8B4', '#B79A6E', '#A0835A');
+        box(dx + 0.25, dy + 0.15, 0.5, 0.35, 2, 14, '#D8D8E0', '#9A9AA8', '#8A8A98'); // teclado y papeles
+        // monitor
+        box(dx + 0.85, dy + 0.12, 0.7, 0.12, 14, 17, '#2A2D44', '#22253A', '#1A1C2E');
+        const working = a.seated && a.status === 'Trabajando';
+        const s0 = g(dx + 0.9, dy + 0.24, 19), s1 = g(dx + 1.5, dy + 0.24, 19), s2 = g(dx + 1.5, dy + 0.24, 29), s3 = g(dx + 0.9, dy + 0.24, 29);
+        poly([s0, s1, s2, s3], working ? '#20314F' : a.seated ? '#2C3550' : '#151726');
+        if (working) for (let i = 0; i < 3; i++) {
+          if (Math.floor(t * 3 + i * 1.7 + dx) % 4 === 0) continue;
+          const z = 21 + i * 2.6, len = 0.15 + ((Math.sin(t * 2 + i + dx) + 1) / 2) * 0.35;
+          poly([g(dx + 0.97, dy + 0.24, z), g(dx + 0.97 + len, dy + 0.24, z), g(dx + 0.97 + len, dy + 0.24, z + 1.2), g(dx + 0.97, dy + 0.24, z + 1.2)], a.shirt);
+        }
+        box(dx + 1.12, dy + 0.15, 0.16, 0.08, 3, 14, '#2A2D44', '#22253A', '#1A1C2E');
+        box(dx + 1.6, dy + 0.3, 0.18, 0.18, 4, 14, '#F4F1EC', '#D7D2CA', '#C6C0B6'); // taza
+      } });
+      list.push({ k: a.seat.x + a.seat.y - 0.05, draw: () => {
+        box(a.seat.x - 0.28, a.seat.y - 0.28, 0.56, 0.56, 3, 5, '#3A3F63', '#2D3150', '#262A45');
+        box(a.seat.x - 0.04, a.seat.y - 0.04, 0.08, 0.08, 5, 0, '#555', '#444', '#333');
+      } });
+    });
+    // mesa de reuniones
+    list.push({ k: 10.5 + 7, draw: () => {
+      box(9.1, 6.1, 2.8, 1.8, 11, 0, '#E6CFA2', '#B08F60', '#9C7C50');
+      box(9.9, 6.6, 0.3, 0.3, 3, 11, '#F4F1EC', '#D7D2CA', '#C6C0B6');
+      box(10.7, 7.1, 0.5, 0.35, 1, 11, '#FFFFFF', '#DADADA', '#CCCCCC');
+    } });
+    // cafetera y fuente
+    list.push({ k: 12.5, draw: () => {
+      box(12.1, 0.1, 0.8, 0.8, 24, 0, '#4A4E66', '#3A3D52', '#2E3144');
+      const p = g(12.9, 0.55, 18); R(Math.round(p[0]) - 1, Math.round(p[1]) - 1, 2, 2, Math.floor(t * 2) % 2 ? '#FF6B5E' : '#B8443B');
+      box(13.15, 0.15, 0.7, 0.7, 16, 0, '#E8ECF7', '#C3C9DD', '#AEB5CC');
+      box(13.25, 0.25, 0.5, 0.5, 12, 16, '#8FCBF2', '#6FAEDD', '#5D9ACB');
+    } });
+    // estantería
+    list.push({ k: 8, draw: () => {
+      box(7.1, 0.1, 1.8, 0.6, 34, 0, '#8A5E3B', '#6E4A2E', '#5C3D25');
+      ['#E8665A', '#4F8FE0', '#5CC48A', '#FFC15E', '#A57BE8', '#E9EDFA'].forEach((c, i) => {
+        const x = 7.2 + i * 0.27; box(x, 0.65, 0.22, 0.05, 8, 10, c, c, c); box(x, 0.65, 0.22, 0.05, 7, 22, c, c, c);
+      });
+    } });
+    // sofá
+    list.push({ k: 0.5 + 8, draw: () => {
+      box(0.05, 7.05, 0.9, 1.9, 8, 0, '#E06F8B', '#B8546F', '#A3465F');
+      box(0.05, 7.05, 0.3, 1.9, 16, 0, '#EC8AA2', '#C25E79', '#AD5069');
+    } });
+    // plantas
+    [[0, 0], [13, 4], [0, 10], [13, 10]].forEach(([x, y]) => {
+      list.push({ k: x + y + 1, draw: () => {
+        box(x + 0.25, y + 0.25, 0.5, 0.5, 8, 0, '#D9784A', '#B35E36', '#9E522F');
+        const [cx, cy] = g(x + 0.5, y + 0.5, 8);
+        const sw = Math.sin(t * 1.3 + x) * 0.6;
+        [[0, -10, 6], [-5, -6, 5], [5, -6, 5], [-2, -15, 4], [3, -13, 4]].forEach(([ox, oy, r], i) => {
+          o.fillStyle = i % 2 ? '#3F9B5A' : '#4FB56B';
+          o.beginPath(); o.arc(cx + ox + sw * (i % 3), cy + oy, r, 0, Math.PI * 2); o.fill();
+        });
+      } });
+    });
+    agents.forEach(a => list.push({ k: a.x + a.y, draw: () => drawAgent(a, t) }));
+    return list.sort((p, q) => p.k - q.k);
+  }
+
+  function shade(hex, f) {
+    const n = parseInt(hex.slice(1), 16);
+    const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.max(0, Math.min(255, Math.round(v * f))));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+
+  const anchors = {};
+  function drawAgent(a, t) {
+    const [fx, fy] = g(a.x, a.y);
+    const sx = Math.round(fx), sy = Math.round(fy);
+    const sel = a.id === selected;
+    if (sel) {
+      const p = 0.5 + 0.5 * Math.sin(t * 5);
+      o.strokeStyle = `rgba(255,193,94,${0.55 + 0.45 * p})`; o.lineWidth = 1;
+      o.beginPath(); o.moveTo(sx, sy - 5); o.lineTo(sx + 10, sy); o.lineTo(sx, sy + 5); o.lineTo(sx - 10, sy); o.closePath(); o.stroke();
+    }
+    o.fillStyle = 'rgba(20,16,30,.3)'; o.beginPath(); o.ellipse(sx, sy, 6, 2.5, 0, 0, Math.PI * 2); o.fill();
+    const seated = a.seated;
+    const pants = '#2D3150', shoe = '#1B1D30', dark = shade(a.shirt, 0.78);
+    let bodyTop, headTop;
+    if (seated) {
+      bodyTop = sy - 13; headTop = sy - 19;
+      R(sx - 3, sy - 5, 2, 3, pants); R(sx + 1, sy - 5, 2, 3, pants);
+    } else {
+      bodyTop = sy - 15; headTop = sy - 21;
+      const st = a.moving ? Math.floor(a.walkPhase * 7) % 2 : 0;
+      R(sx - 3, sy - 7, 2, 6 - st, pants); R(sx + 1, sy - 7, 2, 5 + st, pants);
+      R(sx - 3, sy - 1 - st, 2, 1, shoe); R(sx + 1, sy - 2 + st, 2, 1, shoe);
+    }
+    if (a.long && a.back) R(sx - 4, headTop + 2, 8, 7, a.hair);
+    R(sx - 4, bodyTop, 8, 8, a.shirt);
+    R(sx - 4, bodyTop + 6, 8, 2, dark);
+    const typing = seated && a.status === 'Trabajando';
+    if (typing) {
+      const tp = Math.floor(t * 8) % 2;
+      R(sx - 6, bodyTop + 1, 2, 4, dark); R(sx + 4, bodyTop + 1, 2, 4, dark);
+      R(sx - 6, bodyTop + (tp ? 0 : 1), 2, 1, a.skin); R(sx + 4, bodyTop + (tp ? 1 : 0), 2, 1, a.skin);
+    } else {
+      const sw = a.moving ? (Math.floor(a.walkPhase * 7) % 2 ? 1 : -1) : 0;
+      const talk = a.status === 'Hablando' && Math.floor(t * 3) % 2;
+      R(sx - 6, bodyTop + 1 + sw, 2, 6, dark); R(sx + 4, bodyTop + 1 - sw - (talk ? 3 : 0), 2, 6, dark);
+      R(sx - 6, bodyTop + 7 + sw, 2, 1, a.skin); R(sx + 4, bodyTop + 7 - sw - (talk ? 3 : 0), 2, 1, a.skin);
+    }
+    R(sx - 3, headTop, 6, 6, a.skin);
+    if (a.back) {
+      R(sx - 3, headTop - 1, 6, 5, a.hair);
+    } else {
+      R(sx - 3, headTop - 1, 6, 2, a.hair);
+      R(a.left ? sx + 2 : sx - 3, headTop + 1, 1, a.long ? 6 : 2, a.hair);
+      if (a.long) R(a.left ? sx - 3 : sx + 2, headTop + 1, 1, 6, a.hair);
+      const ex = a.left ? -1 : 0;
+      R(sx - 2 + ex, headTop + 3, 1, 1, '#1B1D30'); R(sx + 1 + ex, headTop + 3, 1, 1, '#1B1D30');
+    }
+    if (a.bun) R(sx - 1, headTop - 3, 3, 2, a.hair);
+    // indicador de estado sobre la cabeza
+    R(sx - 1, headTop - 6, 3, 3, STATUS[a.status].color);
+    anchors[a.id] = { x: sx, y: sy, top: headTop - 6 };
+  }
+
+  function render(t) {
+    o.clearRect(0, 0, LW, LH);
+    drawRoom(t);
+    drawables(t).forEach(d => d.draw());
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(off, offX, offY, LW * S, LH * S);
+
+    // nombres y bocadillos, nítidos a resolución de pantalla
+    const order = [...agents].sort((p, q) => (p.id === selected) - (q.id === selected));
+    order.forEach(a => {
+      const an = anchors[a.id]; if (!an) return;
+      const px = offX + an.x * S, py = offY + an.top * S;
+      const fs = Math.max(10, Math.min(13, S * 3.4 / dpr)) * dpr;
+      ctx.font = `600 ${fs}px "Pixelify Sans", ui-monospace, monospace`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.lineWidth = 3 * dpr; ctx.strokeStyle = 'rgba(21,23,40,.85)'; ctx.lineJoin = 'round';
+      ctx.strokeText(a.name, px, py - 2 * dpr);
+      ctx.fillStyle = a.id === selected ? '#FFC15E' : '#EFE8D8';
+      ctx.fillText(a.name, px, py - 2 * dpr);
+
+      const show = (simT - a.textAt < 5) || a.id === selected || a.status === 'Hablando';
+      if (!show || !a.text) return;
+      const bfs2 = Math.max(10, Math.min(12.5, S * 3.1 / dpr)) * dpr;
+      ctx.font = `500 ${bfs2}px "Figtree", system-ui, sans-serif`;
+      let txt = a.text; const maxW = 170 * dpr;
+      if (ctx.measureText(txt).width > maxW) { while (txt.length > 4 && ctx.measureText(txt + '…').width > maxW) txt = txt.slice(0, -1); txt += '…'; }
+      const tw = ctx.measureText(txt).width, padX = 7 * dpr, bh = bfs2 + 9 * dpr;
+      let bx = px - tw / 2 - padX; const by = py - fs - 10 * dpr - bh;
+      bx = Math.max(4 * dpr, Math.min(canvas.width - tw - padX * 2 - 4 * dpr, bx));
+      ctx.fillStyle = a.id === selected ? '#FFF6E0' : 'rgba(255,250,240,.94)';
+      ctx.beginPath(); ctx.roundRect(bx, by, tw + padX * 2, bh, 4 * dpr); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(px - 4 * dpr, by + bh); ctx.lineTo(px + 4 * dpr, by + bh); ctx.lineTo(px, by + bh + 5 * dpr); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = STATUS[a.status].color; ctx.fillRect(bx, by + 3 * dpr, 2.5 * dpr, bh - 6 * dpr);
+      ctx.fillStyle = '#1B1D30'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText(txt, bx + padX, by + bh / 2 + 0.5 * dpr);
+    });
+  }
+
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+    let s = Math.min(canvas.width / LW, canvas.height / LH);
+    if (s >= 2) s = Math.floor(s);
+    S = s; offX = Math.round((canvas.width - LW * S) / 2); offY = Math.round((canvas.height - LH * S) / 2);
+  }
+  new ResizeObserver(resize).observe(document.getElementById('stage'));
+  resize();
+
+  function hit(ev) {
+    const r = canvas.getBoundingClientRect();
+    const lx = ((ev.clientX - r.left) * dpr - offX) / S, ly = ((ev.clientY - r.top) * dpr - offY) / S;
+    let best = null, bd = 1e9;
+    agents.forEach(a => {
+      const an = anchors[a.id]; if (!an) return;
+      if (lx > an.x - 9 && lx < an.x + 9 && ly > an.top - 6 && ly < an.y + 4) {
+        const d = Math.abs(lx - an.x) + Math.abs(ly - (an.y - 10));
+        if (d < bd) { bd = d; best = a; }
+      }
+    });
+    return best;
+  }
+  canvas.addEventListener('click', ev => { const a = hit(ev); if (a) select(a.id); });
+  canvas.addEventListener('mousemove', ev => { canvas.style.cursor = hit(ev) ? 'pointer' : 'default'; });
+
+  // ---------- Panel ----------
+  const teamEl = document.getElementById('team'), detailEl = document.getElementById('detail'), feedEl = document.getElementById('feed');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  teamEl.innerHTML = agents.map(a => `
+    <li><button class="member" type="button" data-id="${a.id}">
+      <span class="avatar" style="background:${a.shirt}">${a.name[0]}</span>
+      <span><span class="m-name">${a.name}</span><span class="m-role">${a.role}</span></span>
+      <span class="pill" data-pill></span>
+      <span class="m-now" data-now></span>
+    </button></li>`).join('');
+  teamEl.addEventListener('click', e => { const b = e.target.closest('.member'); if (b) select(b.dataset.id); });
+
+  function select(id) {
+    selected = id;
+    teamEl.querySelectorAll('.member').forEach(b => b.setAttribute('aria-current', b.dataset.id === id ? 'true' : 'false'));
+    const a = byId[id];
+    detailEl.innerHTML = `
+      <div class="detail-head">
+        <span class="avatar" style="background:${a.shirt}">${a.name[0]}</span>
+        <div><h3>${a.name}</h3><p>${a.role}</p></div>
+        <span class="pill" id="d-pill"></span>
+      </div>
+      <p class="desc">${a.desc}</p>
+      <ul class="tools">${a.tools.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+      <div class="now"><b>Ahora</b><span id="d-now"></span></div>
+      <form class="assign" id="assign">
+        <label for="task-input">Darle una tarea a ${a.name}</label>
+        <div class="assign-row">
+          <input id="task-input" type="text" maxlength="80" autocomplete="off" placeholder="Ej.: revisar el PR de Recordatorios">
+          <button class="btn primary" type="submit">Asignar</button>
+        </div>
+      </form>
+      <div class="sub">En cola</div>
+      <ul class="mini" id="d-queue"></ul>
+      <div class="sub">Su historial</div>
+      <ul class="mini" id="d-log"></ul>`;
+    document.getElementById('assign').addEventListener('submit', e => {
+      e.preventDefault();
+      const inp = document.getElementById('task-input');
+      const v = inp.value.trim(); if (!v) return;
+      a.queue.push(v); addFeed(a, 'Recibe una tarea: ' + v);
+      inp.value = '';
+      refresh();
+    });
+    refresh();
+  }
+
+  function pill(el, status) { el.className = 'pill ' + STATUS[status].cls; el.textContent = status; }
+
+  function refresh() {
+    teamEl.querySelectorAll('.member').forEach(b => {
+      const a = byId[b.dataset.id];
+      pill(b.querySelector('[data-pill]'), a.status);
+      b.querySelector('[data-now]').textContent = a.text;
+    });
+    const a = byId[selected];
+    const p = document.getElementById('d-pill'); if (!p) return;
+    pill(p, a.status);
+    document.getElementById('d-now').textContent = a.text;
+    document.getElementById('d-queue').innerHTML = a.queue.length
+      ? a.queue.map(q => `<li><span>${esc(q)}</span></li>`).join('')
+      : '<li class="empty">Nada pendiente</li>';
+    document.getElementById('d-log').innerHTML = a.log.length
+      ? a.log.slice(0, 6).map(e => `<li><time>${e.t}</time><span>${esc(e.text)}</span></li>`).join('')
+      : '<li class="empty">Aún sin actividad</li>';
+  }
+
+  function renderFeedItem(e) {
+    const li = document.createElement('li');
+    if (e.kind === 'done') li.classList.add('done');
+    li.classList.add('new');
+    const a = e.id ? byId[e.id] : null;
+    li.innerHTML = `<time>${e.t}</time><span>${a ? `<span class="who" style="color:${a.shirt}">${a.name}</span> ` : '<span class="who">Oficina</span> '}${esc(e.text)}</span>`;
+    feedEl.prepend(li);
+    while (feedEl.children.length > 40) feedEl.lastChild.remove();
+  }
+
+  // ---------- Controles ----------
+  const pauseBtn = document.getElementById('pause');
+  pauseBtn.addEventListener('click', () => { paused = !paused; pauseBtn.textContent = paused ? 'Reanudar' : 'Pausar'; });
+  document.querySelectorAll('[data-speed]').forEach(b => b.addEventListener('click', () => {
+    speed = Number(b.dataset.speed);
+    document.querySelectorAll('[data-speed]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  }));
+  document.getElementById('meeting').addEventListener('click', startMeeting);
+  const clockEl = document.getElementById('clock');
+
+  // ---------- Arranque ----------
+  clockMin = 8 * 60 + 52;
+  addFeed(byId.teo, 'Vista previa desplegada');
+  clockMin = 8 * 60 + 55;
+  addFeed(byId.lia, 'CI en verde en la rama', 'done');
+  clockMin = 8 * 60 + 58;
+  addFeed(byId.bruno, 'Avisos de Supabase: 0 críticos');
+  clockMin = 9 * 60;
+  addFeed(null, 'Empieza la jornada');
+  byId.nora.queue.push('Terminar la pantalla de Recordatorios');
+  agents.forEach(a => { a.plan.push(act('Trabajando', a.steps[a.stepIdx++ % a.steps.length], rnd(2, 7))); });
+  feedEl.querySelectorAll('.new').forEach(li => li.classList.remove('new'));
+  select('vera');
+
+  let last = performance.now(), lastPanel = 0, visT = 0;
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    if (!paused) { tick(dt * speed); visT += dt; }
+    render(visT);
+    if (now - lastPanel > 300) { refresh(); clockEl.textContent = fmt(clockMin); lastPanel = now; }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
